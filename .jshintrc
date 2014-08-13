@@ -1,0 +1,23 @@
+{
+    "browser": false,
+    "jquery": false,
+    "node": true,
+    "camelcase": false,
+    "eqeqeq": true,
+    "eqnull": true,
+    "indent": 2,
+    "latedef": true,
+    "newcap": true,
+    "forin": true,
+    "quotmark": "single",
+    "trailing": true,
+    "undef": true,
+    "unused": true,
+    "strict": false,
+    "globals": {
+      "describe": false,
+      "it": false,
+      "after": false,
+      "before": false
+    }
+}

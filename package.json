@@ -1,0 +1,31 @@
+{
+  "name": "bloody-simple-s3",
+  "version": "0.1.0",
+  "description": "A bloody simple interface to S3, based on the official AWS sdk.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jmike/bloody-simple-s3.git"
+  },
+  "main": "src/BloodySimpleS3.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "s3",
+    "filesystem",
+    "cloud",
+    "storage",
+    "promises",
+    "simple",
+    "amazon",
+    "aws"
+  ],
+  "author": "Dimitrios C. Michalakos <dimitris@jmike.gr>",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "~2.2.2",
+    "aws-sdk": "~2.0.11",
+    "dotenv": "~0.4.0",
+    "lodash": "~2.4.1"
+  }
+}
