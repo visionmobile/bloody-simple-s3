@@ -118,21 +118,18 @@ BloodySimpleS3.prototype.putObjectStream = function (options, callback) {
  * @return {Promise}
  */
 BloodySimpleS3.prototype.download = function (options, callback) {
-  var self = this,
-    key, destination, resolver;
-
-  if (!_.isPlainObject(options)) {
-    return Promise.reject('Invalid request options, expected plain object, received ' + typeof(options));
-  }
-
-  key = options.key;
-  destination = options.destination || os.tmpdir();
-
-  if (!_.isString(key)) {
-    return Promise.reject('Invalid object key, expected string, received ' + typeof(key));
-  }
+  var self = this, resolver;
 
   resolver = function(resolve, reject) {
+    var key, destination;
+
+    if (!_.isPlainObject(options)) return Promise.reject('Invalid request options, expected plain object, received ' + typeof(options));
+
+    key = options.key;
+    destination = options.destination || os.tmpdir();
+
+    if (!_.isString(key)) return Promise.reject('Invalid object key, expected string, received ' + typeof(key));
+
     fs.stat(destination, function (err, stats) {
       var target, writable, readable;
 
