@@ -1,5 +1,6 @@
 var path = require('path'),
   fs = require('fs'),
+  os = require('os'),
   AWS = require('aws-sdk'),
   Promise = require('bluebird'),
   _ = require('lodash');
@@ -46,7 +47,7 @@ function BloodySimpleS3(options) {
 }
 
 /**
- * Retrieves a readable stream of the designated object on S3.
+ * Returns a readable stream from the designated object on S3.
  * @param {string} key the relative path of the object in the S3 bucket.
  * @param {object} [options] optional request options.
  * @see {@link http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#getObject-property} for a detailed list of request options to use.
@@ -79,7 +80,7 @@ BloodySimpleS3.prototype.getObjectStream = function (key, options) {
  * Retrieves the designated object from S3 and stores it to the local filesystem.
  * @param {string} key the relative path of the object in the S3 bucket.
  * @param {object} [options] optional request options.
- * @param {string} [options.destination==__dirname] destination path, may represent a folder or file.
+ * @param {string} [options.destination=os.tmpdir()] destination path, may represent a folder or file.
  * @param {function} [callback] optional callback function, i.e. function(err, data).
  * @see {@link http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#getObject-property} for a detailed list of request options to use.
  * @return {Promise}
@@ -102,7 +103,7 @@ BloodySimpleS3.prototype.download = function (key, options, callback) {
     return Promise.reject('Invalid request options, expected plain object, received ' + typeof(options));
   }
 
-  destination = options.destination || __dirname;
+  destination = options.destination || os.tmpdir();
 
   resolver = function(resolve, reject) {
     fs.stat(destination, function (err, stats) {
