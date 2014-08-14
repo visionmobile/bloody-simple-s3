@@ -72,43 +72,6 @@ BloodySimpleS3.prototype.getObjectStream = function (options) {
 };
 
 /**
- * Creates of updates an object on S3 by consuming a readable stream.
- * @param {object} options request options.
- * @param {string} options.key the object's key, i.e. a relative path to the S3 bucket.
- * @param {ReadableStream} options.body the body stream to consume the file data.
- * @param {function} [callback] optional callback function, i.e. function(err, data).
- * @return {Promise}
- */
-BloodySimpleS3.prototype.putObjectStream = function (options, callback) {
-  var self = this, resolver;
-
-  resolver = function(resolve, reject) {
-    var key, body, params;
-
-    if (!_.isPlainObject(options)) return reject('Invalid request options, expected plain object, received ' + typeof(options));
-
-    key = options.key;
-    body = options.body;
-
-    if (!_.isString(key)) return reject('Invalid object key, expected string, received ' + typeof(key));
-    if (!(body instanceof stream.Readable)) return reject('Invalid body, expected ReadableStream, received ' + typeof(readable));
-
-    params = _.extend(options, {
-      Key: key,
-      Body: body,
-      Bucket: self.bucket
-    });
-
-    self.s3.putObject(params, function (err, data) {
-      if (err) return reject(err);
-      resolve(data);
-    });
-  };
-
-  return new Promise(resolver).nodeify(callback);
-};
-
-/**
  * Downloads the designated object from S3 and stores it to the local filesystem.
  * @param {object} options request options.
  * @param {string} options.key the object's key, i.e. a relative path to the S3 bucket.
@@ -158,6 +121,45 @@ BloodySimpleS3.prototype.download = function (options, callback) {
 };
 
 /**
+ * Creates of updates an object on S3 by consuming a readable stream.
+ * @param {object} options request options.
+ * @param {string} options.key the object's key, i.e. a relative path to the S3 bucket.
+ * @param {ReadableStream} options.body the body stream to consume the file data.
+ * @param {function} [callback] optional callback function, i.e. function(err, data).
+ * @return {Promise}
+ */
+BloodySimpleS3.prototype.putObjectStream = function (options, callback) {
+  var self = this, resolver;
+
+  resolver = function(resolve, reject) {
+    var key, body;
+
+    if (!_.isPlainObject(options)) return reject('Invalid request options, expected plain object, received ' + typeof(options));
+
+    key = options.key;
+    body = options.body;
+
+    if (!_.isString(key)) return reject('Invalid object key, expected string, received ' + typeof(key));
+    if (!(body instanceof stream.Readable)) return reject('Invalid body, expected ReadableStream, received ' + typeof(readable));
+
+    self.s3.putObject({
+      Key: key,
+      Body: body,
+      Bucket: self.bucket
+    }, function (err, data) {
+      if (err) reject(err);
+
+      resolve(_.extend(data, {
+        key: key,
+        bucket: self.bucket
+      }));
+    });
+  };
+
+  return new Promise(resolver).nodeify(callback);
+};
+
+/**
  * Uploads the designated file to S3.
  * @param {object} options request options.
  * @param {string} options.source path to source file.
@@ -172,30 +174,26 @@ BloodySimpleS3.prototype.upload = function (options, callback) {
   resolver = function(resolve, reject) {
     var key, source;
 
-    if (!_.isPlainObject(options)) return Promise.reject('Invalid request options, expected plain object, received ' + typeof(options));
+    if (!_.isPlainObject(options)) return Promise.reject('Invalid request options - expected plain object, received ' + typeof(options));
 
     source = options.source;
-
-    if (!_.isString(source)) return Promise.reject('Invalid file source path, expected string, received ' + typeof(key));
+    if (!_.isString(source)) return Promise.reject('Invalid file source path - expected string, received ' + typeof(key));
 
     key = key || path.basename(source);
-
-    if (!_.isString(key)) return Promise.reject('Invalid object key, expected string, received ' + typeof(key));
+    if (!_.isString(key)) return Promise.reject('Invalid object key - expected string, received ' + typeof(key));
 
     fs.stat(source, function (err, stats) {
-      var readable, params;
+      var readable;
 
       if (err) return reject(err);
-      if (!stats.isFile()) return reject('Source path must be referencing a file');
+      if (!stats.isFile()) return reject('Invalid source path - expected string referencing a file');
 
       readable = fs.createReadStream(source);
 
-      params = _.extend(options, {
+      resolve(self.putObjectStream({
         key: key,
         body: readable
-      });
-
-      return self.putObjectStream(params);
+      }));
     });
   };
 
@@ -204,7 +202,7 @@ BloodySimpleS3.prototype.upload = function (options, callback) {
 
 module.exports = BloodySimpleS3;
 
-// require('dotenv').load();
+require('dotenv').load();
 
 // var s3 = new BloodySimpleS3({
 //   bucket: process.env.S3_BUCKET,
@@ -216,6 +214,14 @@ module.exports = BloodySimpleS3;
 
 // s3.download('apk/lean-canvas.pdf').then(function (filePath) {
 //   console.log(filePath);
+// }).catch(function (err) {
+//   console.error(err);
+// });
+
+// s3.upload({
+//   source: path.resolve(__dirname, '../LICENSE')
+// }).then(function (data) {
+//   console.log(data);
 // }).catch(function (err) {
 //   console.error(err);
 // });
