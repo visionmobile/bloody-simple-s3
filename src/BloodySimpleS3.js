@@ -49,26 +49,26 @@ function BloodySimpleS3(options) {
  * @param {object} options request options.
  * @param {string} options.key the object's key, i.e. a relative path to the S3 bucket.
  * @return {ReadableStream}
+ * @throws {Error} if options are invalid.
  */
 BloodySimpleS3.prototype.getObjectStream = function (options) {
-  var key, params;
+  var key;
 
+  // validate options
   if (!_.isPlainObject(options)) {
-    return Promise.reject('Invalid request options, expected plain object, received ' + typeof(options));
+    throw new Error('Invalid request options, expected plain object, received ' + typeof(options));
   }
 
+  // extract key from options + validate
   key = options.key;
-
   if (!_.isString(key)) {
-    return Promise.reject('Invalid object key, expected string, received ' + typeof(key));
+    throw new Error('Invalid object key, expected string, received ' + typeof(key));
   }
 
-  params = _.extend(options, {
+  return this.s3.getObject({
     Key: key,
     Bucket: this.bucket
-  });
-
-  return this.s3.getObject(params).createReadStream();
+  }).createReadStream();
 };
 
 /**
@@ -86,13 +86,22 @@ BloodySimpleS3.prototype.download = function (options, callback) {
   resolver = function(resolve, reject) {
     var key, destination;
 
-    if (!_.isPlainObject(options)) return Promise.reject('Invalid request options, expected plain object, received ' + typeof(options));
+    // validate options
+    if (!_.isPlainObject(options)) {
+      reject('Invalid request options - expected plain object, received ' + typeof(options));
+      return;
+    }
 
+    // extract key from options + validate
     key = options.key;
+    if (!_.isString(key)) {
+      reject('Invalid object key - expected string, received ' + typeof(key));
+      return;
+    }
+
     destination = options.destination || os.tmpdir();
 
-    if (!_.isString(key)) return Promise.reject('Invalid object key, expected string, received ' + typeof(key));
-
+    // make sure destination is either file or folder
     fs.stat(destination, function (err, stats) {
       var target, writable, readable;
 
@@ -250,7 +259,9 @@ module.exports = BloodySimpleS3;
 //   sslEnabled: true
 // });
 
-// s3.download('apk/lean-canvas.pdf').then(function (filePath) {
+// s3.download({
+//   key: 'apk/com.canned.recipes_v1.apk'
+// }).then(function (filePath) {
 //   console.log(filePath);
 // }).catch(function (err) {
 //   console.error(err);
