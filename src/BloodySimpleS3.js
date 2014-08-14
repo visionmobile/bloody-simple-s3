@@ -134,25 +134,43 @@ BloodySimpleS3.prototype.putObjectStream = function (options, callback) {
   resolver = function(resolve, reject) {
     var key, body;
 
-    if (!_.isPlainObject(options)) return reject('Invalid request options, expected plain object, received ' + typeof(options));
+    // validate options
+    if (!_.isPlainObject(options)) {
+      reject('Invalid request options, expected plain object, received ' + typeof(options));
+      return;
+    }
 
+    // extract key from options + validate
     key = options.key;
+    if (!_.isString(key)) {
+      reject('Invalid object key, expected string, received ' + typeof(key));
+      return;
+    }
+
+    // extract body from options + validate
     body = options.body;
+    if (!(body instanceof stream.Readable)) {
+      reject('Invalid body, expected ReadableStream, received ' + typeof(readable));
+      return;
+    }
 
-    if (!_.isString(key)) return reject('Invalid object key, expected string, received ' + typeof(key));
-    if (!(body instanceof stream.Readable)) return reject('Invalid body, expected ReadableStream, received ' + typeof(readable));
-
+    // put object to S4
     self.s3.putObject({
       Key: key,
       Body: body,
       Bucket: self.bucket
     }, function (err, data) {
-      if (err) reject(err);
+
+      if (err) {
+        reject(err);
+        return;
+      }
 
       resolve(_.extend(data, {
         key: key,
         bucket: self.bucket
       }));
+
     });
   };
 
@@ -174,19 +192,39 @@ BloodySimpleS3.prototype.upload = function (options, callback) {
   resolver = function(resolve, reject) {
     var key, source;
 
-    if (!_.isPlainObject(options)) return Promise.reject('Invalid request options - expected plain object, received ' + typeof(options));
+    // validate options
+    if (!_.isPlainObject(options)) {
+      reject('Invalid request options - expected plain object, received ' + typeof(options));
+      return;
+    }
 
+    // extract key from options + validate
+    key = options.key || path.basename(source);
+    if (!_.isString(key)) {
+      reject('Invalid object key - expected string, received ' + typeof(key));
+      return;
+    }
+
+    // extract source from options + validate
     source = options.source;
-    if (!_.isString(source)) return Promise.reject('Invalid file source path - expected string, received ' + typeof(key));
+    if (!_.isString(source)) {
+      reject('Invalid file source path - expected string, received ' + typeof(key));
+      return;
+    }
 
-    key = path.basename(source) || key;
-    if (!_.isString(key)) return Promise.reject('Invalid object key - expected string, received ' + typeof(key));
-
+    // make sure source is referencing a file
     fs.stat(source, function (err, stats) {
       var readable;
 
-      if (err) return reject(err);
-      if (!stats.isFile()) return reject('Invalid source path - expected string referencing a file');
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      if (!stats.isFile()) {
+        reject('Invalid source - expected string referencing a file');
+        return;
+      }
 
       readable = fs.createReadStream(source);
 
@@ -204,13 +242,13 @@ module.exports = BloodySimpleS3;
 
 require('dotenv').load();
 
-// var s3 = new BloodySimpleS3({
-//   bucket: process.env.S3_BUCKET,
-//   accessKeyId: process.env.S3_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-//   region: process.env.S3_REGION,
-//   sslEnabled: true
-// });
+var s3 = new BloodySimpleS3({
+  bucket: process.env.S3_BUCKET,
+  accessKeyId: process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  region: process.env.S3_REGION,
+  sslEnabled: true
+});
 
 // s3.download('apk/lean-canvas.pdf').then(function (filePath) {
 //   console.log(filePath);
@@ -218,10 +256,11 @@ require('dotenv').load();
 //   console.error(err);
 // });
 
-// s3.upload({
-//   source: path.resolve(__dirname, '../LICENSE')
-// }).then(function (data) {
-//   console.log(data);
-// }).catch(function (err) {
-//   console.error(err);
-// });
+s3.upload({
+  source: path.resolve(__dirname, '../LICENSE'),
+  key: 'apk/test'
+}).then(function (data) {
+  console.log(data);
+}).catch(function (err) {
+  console.error(err);
+});
