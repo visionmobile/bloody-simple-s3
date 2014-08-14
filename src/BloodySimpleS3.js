@@ -240,15 +240,15 @@ BloodySimpleS3.prototype.upload = function (options, callback) {
 
 module.exports = BloodySimpleS3;
 
-require('dotenv').load();
+// require('dotenv').load();
 
-var s3 = new BloodySimpleS3({
-  bucket: process.env.S3_BUCKET,
-  accessKeyId: process.env.S3_ACCESS_KEY_ID,
-  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-  region: process.env.S3_REGION,
-  sslEnabled: true
-});
+// var s3 = new BloodySimpleS3({
+//   bucket: process.env.S3_BUCKET,
+//   accessKeyId: process.env.S3_ACCESS_KEY_ID,
+//   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+//   region: process.env.S3_REGION,
+//   sslEnabled: true
+// });
 
 // s3.download('apk/lean-canvas.pdf').then(function (filePath) {
 //   console.log(filePath);
@@ -256,11 +256,11 @@ var s3 = new BloodySimpleS3({
 //   console.error(err);
 // });
 
-s3.upload({
-  source: path.resolve(__dirname, '../LICENSE'),
-  key: 'apk/test'
-}).then(function (data) {
-  console.log(data);
-}).catch(function (err) {
-  console.error(err);
-});
+// s3.upload({
+//   source: path.resolve(__dirname, '../LICENSE'),
+//   key: 'apk/test'
+// }).then(function (data) {
+//   console.log(data);
+// }).catch(function (err) {
+//   console.error(err);
+// });
