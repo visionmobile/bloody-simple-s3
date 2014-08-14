@@ -179,7 +179,7 @@ BloodySimpleS3.prototype.upload = function (options, callback) {
     source = options.source;
     if (!_.isString(source)) return Promise.reject('Invalid file source path - expected string, received ' + typeof(key));
 
-    key = key || path.basename(source);
+    key = path.basename(source) || key;
     if (!_.isString(key)) return Promise.reject('Invalid object key - expected string, received ' + typeof(key));
 
     fs.stat(source, function (err, stats) {
