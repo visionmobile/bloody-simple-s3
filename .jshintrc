@@ -1,6 +1,6 @@
 {
-    "browser": false,
-    "jquery": false,
+    "browser": true,
+    "jquery": true,
     "node": true,
     "camelcase": false,
     "eqeqeq": true,
@@ -13,6 +13,9 @@
     "trailing": true,
     "undef": true,
     "unused": true,
+    "predef": [
+      "-Promise"
+    ],
     "strict": false,
     "globals": {
       "describe": false,
