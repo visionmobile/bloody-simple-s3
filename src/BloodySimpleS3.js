@@ -163,7 +163,7 @@ BloodySimpleS3.prototype.putObjectStream = function (options, callback) {
       return;
     }
 
-    // put object to S4
+    // put object to S3
     self.s3.putObject({
       Key: key,
       Body: body,
