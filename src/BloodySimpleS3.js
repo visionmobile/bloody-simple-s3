@@ -9,113 +9,149 @@ var path = require('path'),
 /**
  * Constructs and returns a new bloody simple S3 client.
  * @param {object} options S3 client options.
- * @param {string} options.bucket the name of the S3 bucket to connect to.
+ * @param {string} options.bucket name of the S3 bucket to connect to.
  * @param {string} options.accessKeyId your AWS access key ID.
  * @param {string} options.secretAccessKey your AWS secret access key.
- * @param {string} [options.region=us-east-1] the region to send service requests to.
+ * @param {string} [options.region=us-east-1] AWS region, defaults to us-east-1.
  * @param {boolean} [options.sslEnabled=true] whether to enable SSL for requests.
- * sslEnabled
+ * @throws {Error} if options are invalid.
  * @constructor
  */
 function BloodySimpleS3(options) {
-  var bucket, accessKeyId, secretAccessKey, region, sslEnabled;
+  // make sure options is valid
+  if (!_.isPlainObject(options)) {
+    throw new Error('Invalid options param; expected object, received ' + typeof(options));
+  }
 
-  if (!_.isPlainObject(options)) throw new Error('Invalid or unspecified options');
+  // set default options
+  options = _.defaults(options, {
+    region: 'us-east-1',
+    sslEnabled: true
+  });
 
-  bucket = options.bucket;
-  accessKeyId = options.accessKeyId;
-  secretAccessKey = options.secretAccessKey;
-  region = options.region || 'us-east-1';
-  sslEnabled = (options.sslEnabled === undefined) ? true : options.sslEnabled;
+  // make sure individual options are valid
+  if (!_.isString(options.bucket)) {
+    throw new Error(
+      'Invalid S3 bucket option; ' +
+      'expected string, received ' + typeof(options.bucket)
+    );
+  }
 
-  if (!_.isString(bucket)) throw new Error('Invalid or unspecified S3 bucket');
-  if (!_.isString(accessKeyId)) throw new Error('Invalid or unspecified S3 accessKeyId');
-  if (!_.isString(secretAccessKey)) throw new Error('Invalid or unspecified S3 secretAccessKey');
-  if (!_.isString(region)) throw new Error('Invalid or unspecified S3 region');
-  if (!_.isBoolean(sslEnabled)) throw new Error('Invalid or unspecified sslEnabled option');
+  if (!_.isString(options.accessKeyId)) {
+    throw new Error(
+      'Invalid accessKeyId option; ' +
+      'expected string, received ' + typeof(options.accessKeyId)
+    );
+  }
 
-  this.bucket = bucket;
+  if (!_.isString(options.secretAccessKey)) {
+    throw new Error(
+      'Invalid secretAccessKey option; ' +
+      'expected string, received ' + typeof(options.secretAccessKey)
+    );
+  }
 
+  if (!_.isString(options.region)) {
+    throw new Error(
+      'Invalid region option; ' +
+      'expected string, received ' + typeof(options.region)
+    );
+  }
+
+  if (!_.isBoolean(options.sslEnabled)) {
+    throw new Error(
+      'Invalid sslEnabled option; ' +
+      'expected boolean, received ' + typeof(options.sslEnabled)
+    );
+  }
+
+  this.bucket = options.bucket;
   this.s3 = new AWS.S3({
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-    region: region,
+    accessKeyId: options.accessKeyId,
+    secretAccessKey: options.secretAccessKey,
+    region: options.region,
+    sslEnabled: options.sslEnabled,
     apiVersion: '2006-03-01'
   });
 }
 
 /**
- * Returns a readable stream to retrieve the designated object from S3.
- * @param {object} options request options.
- * @param {string} options.key the object's key, i.e. a relative path to the S3 bucket.
+ * Creates and returns a readable stream to the designated file on S3.
+ * @param {string} filename relative path within the S3 bucket.
  * @return {ReadableStream}
- * @throws {Error} if options are invalid.
+ * @throws {Error} if filename is invalid.
  */
-BloodySimpleS3.prototype.getObjectStream = function (options) {
-  var key;
-
-  // validate options
-  if (!_.isPlainObject(options)) {
-    throw new Error('Invalid request options, expected plain object, received ' + typeof(options));
-  }
-
-  // extract key from options + validate
-  key = options.key;
-  if (!_.isString(key)) {
-    throw new Error('Invalid object key, expected string, received ' + typeof(key));
+BloodySimpleS3.prototype.createReadStream = function (filename) {
+  // make sure filename is valid
+  if (!_.isString(filename)) {
+    throw new Error(
+      'Invalid filename param; ' +
+      'expected string, received ' + typeof(filename)
+    );
   }
 
   return this.s3.getObject({
-    Key: key,
+    Key: filename,
     Bucket: this.bucket
   }).createReadStream();
 };
 
 /**
- * Downloads the designated object from S3 and stores it to the local filesystem.
- * @param {object} options request options.
- * @param {string} options.key the object's key, i.e. a relative path to the S3 bucket.
+ * Downloads the designated file from S3 to local filesystem.
+ * @param {string} filename relative path within the S3 bucket.
+ * @param {object} [options] request options.
  * @param {string} [options.destination=os.tmpdir()] destination path, i.e. a folder or file.
- * @param {function} [callback] optional callback function, i.e. function(err, data).
- * @see {@link http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#getObject-property} for a detailed list of request options to use.
+ * @param {function} [callback] optional callback function, i.e. function(err, path).
  * @return {Promise}
  */
-BloodySimpleS3.prototype.download = function (options, callback) {
+BloodySimpleS3.prototype.download = function (filename, options, callback) {
   var self = this, resolver;
 
   resolver = function(resolve, reject) {
-    var key, destination;
-
-    // validate options
-    if (!_.isPlainObject(options)) {
-      reject('Invalid request options - expected plain object, received ' + typeof(options));
-      return;
+    // make sure filename param is valid
+    if (!_.isString(filename)) {
+      return reject(new Error(
+        'Invalid filename param; ' +
+        'expected string, received ' + typeof(filename)
+      ));
     }
 
-    // extract key from options + validate
-    key = options.key;
-    if (!_.isString(key)) {
-      reject('Invalid object key - expected string, received ' + typeof(key));
-      return;
+    // handle optional params
+    if (_.isFunction(options)) {
+      callback = options;
+      options = {};
+    } else if (_.isUndefined(options)) {
+      options = {};
+    } else if (!_.isObject(options)) {
+      return reject(new Error(
+        'Invalid options param; ' +
+        'expected object, received ' + typeof(options)
+      ));
     }
 
-    destination = options.destination || os.tmpdir();
+    // set defaults
+    options = _.defaults(options, {
+      destination: os.tmpdir()
+    });
 
-    // make sure destination is either file or folder
-    fs.stat(destination, function (err, stats) {
+    fs.stat(options.destination, function (err, stats) {
       var target, writable, readable;
 
       if (err) return reject(err);
 
+      // make sure destination is either file or folder
       if (stats.isDirectory()) {
-        target = path.join(destination, path.basename(key));
+        target = path.join(options.destination, path.basename(filename));
       } else if (stats.isFile()) {
-        target = destination;
+        target = options.destination;
       } else {
-        return reject('Invalid directory path, expected a folder or file');
+        return reject(new Error(
+          'Invalid destination path; ' +
+          'expected folder or file'
+        ));
       }
 
-      readable = self.getObjectStream(options);
+      readable = self.createReadStream(filename);
       writable = fs.createWriteStream(target);
       readable.pipe(writable);
 
@@ -130,56 +166,44 @@ BloodySimpleS3.prototype.download = function (options, callback) {
 };
 
 /**
- * Creates of updates an object on S3 by consuming a readable stream.
- * @param {object} options request options.
- * @param {string} options.key the object's key, i.e. a relative path to the S3 bucket.
- * @param {ReadableStream} options.body the body stream to consume the file data.
+ * Creates of updates the designated file on S3, consuming a readable stream.
+ * @param {string} filename relative path within the S3 bucket.
+ * @param {ReadableStream} readable the readable stream to pull the file data.
  * @param {function} [callback] optional callback function, i.e. function(err, data).
  * @return {Promise}
  */
-BloodySimpleS3.prototype.putObjectStream = function (options, callback) {
+BloodySimpleS3.prototype.writeFileStream = function (filename, readable, callback) {
   var self = this, resolver;
 
   resolver = function(resolve, reject) {
-    var key, body;
-
-    // validate options
-    if (!_.isPlainObject(options)) {
-      reject('Invalid request options, expected plain object, received ' + typeof(options));
-      return;
+    // make sure filename param is valid
+    if (!_.isString(filename)) {
+      return reject(new Error(
+        'Invalid filename param; ' +
+        'expected string, received ' + typeof(filename)
+      ));
     }
 
-    // extract key from options + validate
-    key = options.key;
-    if (!_.isString(key)) {
-      reject('Invalid object key, expected string, received ' + typeof(key));
-      return;
-    }
-
-    // extract body from options + validate
-    body = options.body;
-    if (!(body instanceof stream.Readable)) {
-      reject('Invalid body, expected ReadableStream, received ' + typeof(readable));
-      return;
+    // make sure readable param is valid
+    if (!(readable instanceof stream.Readable)) {
+      return reject(new Error(
+        'Invalid readable param; ' +
+        'expected a ReadableStream instance, received ' + typeof(readable)
+      ));
     }
 
     // put object to S3
     self.s3.putObject({
-      Key: key,
-      Body: body,
+      Key: filename,
+      Body: readable,
       Bucket: self.bucket
     }, function (err, data) {
-
-      if (err) {
-        reject(err);
-        return;
-      }
+      if (err) return reject(err);
 
       resolve(_.extend(data, {
-        key: key,
+        key: filename,
         bucket: self.bucket
       }));
-
     });
   };
 
@@ -188,59 +212,58 @@ BloodySimpleS3.prototype.putObjectStream = function (options, callback) {
 
 /**
  * Uploads the designated file to S3.
- * @param {object} options request options.
- * @param {string} options.source path to source file.
- * @param {string} [options.key] the object's key, defaults to source filename.
+ * @param {string} filepath absolute/relative path to file in local disk.
+ * @param {object} [options] upload options.
+ * @param {string} [options.filename] the filename to store in S3, defaults to the basename of the filepath.
  * @param {function} [callback] optional callback function, i.e. function(err, data).
- * @see {@link http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#getObject-property} for a detailed list of request options to use.
  * @return {Promise}
  */
-BloodySimpleS3.prototype.upload = function (options, callback) {
+BloodySimpleS3.prototype.upload = function (filepath, options, callback) {
   var self = this, resolver;
 
   resolver = function(resolve, reject) {
-    var key, source;
-
-    // validate options
-    if (!_.isPlainObject(options)) {
-      reject('Invalid request options - expected plain object, received ' + typeof(options));
-      return;
+    // make sure filepath param is valid
+    if (!_.isString(filepath)) {
+      return reject(new Error(
+        'Invalid filepath param; ' +
+        'expected string, received ' + typeof(filepath)
+      ));
     }
 
-    // extract key from options + validate
-    key = options.key || path.basename(source);
-    if (!_.isString(key)) {
-      reject('Invalid object key - expected string, received ' + typeof(key));
-      return;
+    // handle optional params
+    if (_.isFunction(options)) {
+      callback = options;
+      options = {};
+    } else if (_.isUndefined(options)) {
+      options = {};
+    } else if (!_.isObject(options)) {
+      return reject(new Error(
+        'Invalid options param; ' +
+        'expected object, received ' + typeof(options)
+      ));
     }
 
-    // extract source from options + validate
-    source = options.source;
-    if (!_.isString(source)) {
-      reject('Invalid file source path - expected string, received ' + typeof(key));
-      return;
-    }
+    // resolve relative filepath
+    filepath = path.resolve(__dirname, filepath);
 
-    // make sure source is referencing a file
-    fs.stat(source, function (err, stats) {
+    // set default values of options
+    options = _.defaults(options, {
+      filename: path.basename(filepath)
+    });
+
+    // make sure filepath is referencing a file
+    fs.stat(filepath, function (err, stats) {
       var readable;
 
-      if (err) {
-        reject(err);
-        return;
-      }
+      if (err) return reject(err);
 
       if (!stats.isFile()) {
-        reject('Invalid source - expected string referencing a file');
-        return;
+        return reject(new Error('Filepath does not reference a file'));
       }
 
-      readable = fs.createReadStream(source);
+      readable = fs.createReadStream(filepath);
 
-      resolve(self.putObjectStream({
-        key: key,
-        body: readable
-      }));
+      resolve(self.writeFileStream(options.filename, readable));
     });
   };
 
