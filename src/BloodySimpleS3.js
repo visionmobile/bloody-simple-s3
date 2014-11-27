@@ -373,7 +373,7 @@ BloodySimpleS3.prototype.copy = function (source, key, options, callback) {
 
   params = _.assign(options, {
     Bucket: this.bucket,
-    CopySource: path.resolve(this.bucket, source),
+    CopySource: path.join(this.bucket, source),
     Key: key
   });
 
