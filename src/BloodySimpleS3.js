@@ -77,42 +77,42 @@ function BloodySimpleS3(options) {
 
 /**
  * Creates and returns a readable stream to the designated file on S3.
- * @param {string} filename relative path within the S3 bucket.
+ * @param {string} key relative path within the S3 bucket.
  * @return {ReadableStream}
- * @throws {Error} if filename is invalid.
+ * @throws {Error} if key is invalid.
  */
-BloodySimpleS3.prototype.createReadStream = function (filename) {
-  // make sure filename is valid
-  if (!_.isString(filename)) {
+BloodySimpleS3.prototype.createReadStream = function (key) {
+  // make sure key is valid
+  if (!_.isString(key)) {
     throw new Error(
-      'Invalid filename param; ' +
-      'expected string, received ' + typeof(filename)
+      'Invalid key param; ' +
+      'expected string, received ' + typeof(key)
     );
   }
 
   return this.s3.getObject({
-    Key: filename,
+    Key: key,
     Bucket: this.bucket
   }).createReadStream();
 };
 
 /**
  * Downloads the designated file from S3 to local filesystem.
- * @param {string} filename relative path within the S3 bucket.
+ * @param {string} key relative path within the S3 bucket.
  * @param {object} [options] request options.
  * @param {string} [options.destination=os.tmpdir()] destination path, i.e. a folder or file.
  * @param {function} [callback] optional callback function, i.e. function(err, path).
  * @return {Promise}
  */
-BloodySimpleS3.prototype.download = function (filename, options, callback) {
+BloodySimpleS3.prototype.download = function (key, options, callback) {
   var self = this, resolver;
 
   resolver = function(resolve, reject) {
-    // make sure filename param is valid
-    if (!_.isString(filename)) {
+    // make sure key param is valid
+    if (!_.isString(key)) {
       return reject(new Error(
-        'Invalid filename param; ' +
-        'expected string, received ' + typeof(filename)
+        'Invalid key param; ' +
+        'expected string, received ' + typeof(key)
       ));
     }
 
@@ -135,15 +135,15 @@ BloodySimpleS3.prototype.download = function (filename, options, callback) {
     });
 
     fs.stat(options.destination, function (err, stats) {
-      var target, writable, readable;
+      var file, writable, readable;
 
       if (err) return reject(err);
 
       // make sure destination is either file or folder
       if (stats.isDirectory()) {
-        target = path.join(options.destination, path.basename(filename));
+        file = path.join(options.destination, path.basename(key));
       } else if (stats.isFile()) {
-        target = options.destination;
+        file = options.destination;
       } else {
         return reject(new Error(
           'Invalid destination path; ' +
@@ -151,13 +151,13 @@ BloodySimpleS3.prototype.download = function (filename, options, callback) {
         ));
       }
 
-      readable = self.createReadStream(filename);
-      writable = fs.createWriteStream(target);
+      readable = self.createReadStream(key);
+      writable = fs.createWriteStream(file);
       readable.pipe(writable);
 
       readable.on('error', reject);
       writable.on('finish', function () {
-        resolve(target);
+        resolve(file);
       });
     });
   };
@@ -167,20 +167,20 @@ BloodySimpleS3.prototype.download = function (filename, options, callback) {
 
 /**
  * Creates of updates the designated file on S3, consuming a readable stream.
- * @param {string} filename relative path within the S3 bucket.
+ * @param {string} key relative path within the S3 bucket.
  * @param {ReadableStream} readable the readable stream to pull the file data.
  * @param {function} [callback] optional callback function, i.e. function(err, data).
  * @return {Promise}
  */
-BloodySimpleS3.prototype.writeFileStream = function (filename, readable, callback) {
+BloodySimpleS3.prototype.writeFileStream = function (key, readable, callback) {
   var self = this, resolver;
 
   resolver = function(resolve, reject) {
-    // make sure filename param is valid
-    if (!_.isString(filename)) {
+    // make sure key param is valid
+    if (!_.isString(key)) {
       return reject(new Error(
-        'Invalid filename param; ' +
-        'expected string, received ' + typeof(filename)
+        'Invalid key param; ' +
+        'expected string, received ' + typeof(key)
       ));
     }
 
@@ -194,16 +194,12 @@ BloodySimpleS3.prototype.writeFileStream = function (filename, readable, callbac
 
     // put object to S3
     self.s3.putObject({
-      Key: filename,
+      Key: key,
       Body: readable,
       Bucket: self.bucket
     }, function (err, data) {
       if (err) return reject(err);
-
-      resolve(_.extend(data, {
-        key: filename,
-        bucket: self.bucket
-      }));
+      resolve(_.extend(data, {key: key, bucket: self.bucket}));
     });
   };
 
@@ -212,21 +208,21 @@ BloodySimpleS3.prototype.writeFileStream = function (filename, readable, callbac
 
 /**
  * Uploads the designated file to S3.
- * @param {string} filepath absolute/relative path to file in local disk.
+ * @param {string} file absolute/relative path to file in local disk.
  * @param {object} [options] upload options.
- * @param {string} [options.filename] the filename to store in S3, defaults to the basename of the filepath.
+ * @param {string} [options.key] the file name to store in S3.
  * @param {function} [callback] optional callback function, i.e. function(err, data).
  * @return {Promise}
  */
-BloodySimpleS3.prototype.upload = function (filepath, options, callback) {
+BloodySimpleS3.prototype.upload = function (file, options, callback) {
   var self = this, resolver;
 
   resolver = function(resolve, reject) {
-    // make sure filepath param is valid
-    if (!_.isString(filepath)) {
+    // make sure file param is valid
+    if (!_.isString(file)) {
       return reject(new Error(
-        'Invalid filepath param; ' +
-        'expected string, received ' + typeof(filepath)
+        'Invalid file param; ' +
+        'expected string, received ' + typeof(file)
       ));
     }
 
@@ -243,27 +239,30 @@ BloodySimpleS3.prototype.upload = function (filepath, options, callback) {
       ));
     }
 
-    // resolve relative filepath
-    filepath = path.resolve(__dirname, filepath);
+    // resolve relative file
+    file = path.resolve(__dirname, file);
 
     // set default values of options
     options = _.defaults(options, {
-      filename: path.basename(filepath)
+      key: path.basename(file)
     });
 
-    // make sure filepath is referencing a file
-    fs.stat(filepath, function (err, stats) {
+    // make sure file is referencing a file
+    fs.stat(file, function (err, stats) {
       var readable;
 
       if (err) return reject(err);
 
       if (!stats.isFile()) {
-        return reject(new Error('Filepath does not reference a file'));
+        return reject(new Error(
+          'File path is invalid; ' +
+          'you need to reference an actual file'
+        ));
       }
 
-      readable = fs.createReadStream(filepath);
+      readable = fs.createReadStream(file);
 
-      resolve(self.writeFileStream(options.filename, readable));
+      resolve(self.writeFileStream(options.key, readable));
     });
   };
 
