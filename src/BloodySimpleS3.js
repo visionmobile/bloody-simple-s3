@@ -377,7 +377,7 @@ BloodySimpleS3.prototype.copy = function (source, destination, options, callback
 
   params = _.assign(options, {
     Bucket: this.bucket,
-    CopySource: encodeURI(path.join(this.bucket, source)),
+    CopySource: encodeURIComponent(path.join(this.bucket, source)),
     Key: destination,
     MetadataDirective: 'COPY'
   });
@@ -457,18 +457,18 @@ module.exports = BloodySimpleS3;
 // s3.list('./temp')
 //   .then(function (arr) {
 //     console.log(arr);
-//     return s3.copy(arr[1].key, 'temp/0a')
-//       .then(function (data) {
-//         console.log(data);
-//         return s3.remove('temp/0a');
-//       })
-//       .then(function (data) {
-//         console.log(data);
-//       });
-//   })
-//   .catch(function (err) {
-//     console.error(err);
-//   });
+    // return s3.copy('temp/A+ Manga 1.0.ipa', 'temp/0a')
+    //   .then(function (data) {
+    //     console.log(data);
+    //     // return s3.remove('temp/0a');
+    //   })
+    //   .catch(function (data) {
+    //     console.log(data);
+    //   });
+  // })
+  // .catch(function (err) {
+  //   console.error(err);
+  // });
 
 // s3.upload({
 //   source: path.resolve(__dirname, '../LICENSE'),
