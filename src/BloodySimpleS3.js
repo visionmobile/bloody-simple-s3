@@ -280,6 +280,8 @@ BloodySimpleS3.prototype.upload = function (file, options, callback) {
  * Returns an array of (up to 1000) files in the designated directory.
  * @param {string} dir relative directory path within the S3 bucket.
  * @param {object} [options] list options.
+ * @param {string} [options.cursor] the key to start with listing files.
+ * @param {number} [options.limit] maximum number of files to list, must not exceed 1000.
  * @param {function} [callback] optional callback function, i.e. function(err, data).
  * @return {Promise}
  */
@@ -308,10 +310,12 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
     options = {};
   }
 
-  params = _.assign(options, {
+  params = {
     Bucket: this.bucket,
-    Prefix: path.normalize(dir)
-  });
+    Prefix: path.normalize(dir),
+    Marker: options.cursor,
+    MaxKeys: options.limit
+  };
 
   resolver = function(resolve, reject) {
     self.s3.listObjects(params, function(err, data) {
@@ -449,6 +453,7 @@ module.exports = BloodySimpleS3;
 
 // s3.list('./temp')
 //   .then(function (arr) {
+//     console.log(arr);
 //     return s3.copy(arr[1].key, 'temp/0a')
 //       .then(function (data) {
 //         console.log(data);
