@@ -1,3 +1,8 @@
+## 0.2.1 - 2014-11-28
+
+* Allow limit and cursor options on #list().
+
 ## 0.2.0 - 2014-11-27
 
-* Major refactor.
+* Introducing #list(), #copy(), #remove(), #move() methods to manipulate files on Amazon S3.
+* Old functions refactored with new names and params.
