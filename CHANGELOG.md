@@ -1,3 +1,7 @@
+## 0.2.4 - 2014-11-28
+
+* Use #encodeURIComponent() instead of #encodeURI() to encode @CopySource.
+
 ## 0.2.3 - 2014-11-28
 
 * Comment test code that wasn't supposed to be there.
