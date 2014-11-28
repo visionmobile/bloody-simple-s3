@@ -203,9 +203,11 @@ BloodySimpleS3.prototype.writeFileStream = function (key, readable, callback) {
   };
 
   resolver = function(resolve, reject) {
-    self.s3.putObject(params, function (err, data) {
+    self.s3.putObject(params, function (err) {
       if (err) return reject(err);
-      resolve(_.extend(data, {key: key, bucket: self.bucket}));
+      resolve({
+        key: key
+      });
     });
   };
 
@@ -385,7 +387,10 @@ BloodySimpleS3.prototype.copy = function (source, destination, options, callback
   resolver = function(resolve, reject) {
     self.s3.copyObject(params, function(err, data) {
       if (err) return reject(err);
-      resolve(data);
+      resolve({
+        key: destination,
+        lastModified: data.LastModified
+      });
     });
   };
 
@@ -396,7 +401,7 @@ BloodySimpleS3.prototype.copy = function (source, destination, options, callback
  * Removes the designated file from Amazon S3.
  * @param {string} key relative path within the S3 bucket.
  * @param {object} [options] remove options.
- * @param {function} [callback] optional callback function, i.e. function(err, data).
+ * @param {function} [callback] optional callback function, i.e. function(err).
  * @return {Promise}
  */
 BloodySimpleS3.prototype.remove = function (key, callback) {
@@ -414,9 +419,9 @@ BloodySimpleS3.prototype.remove = function (key, callback) {
   };
 
   resolver = function(resolve, reject) {
-    self.s3.deleteObject(params, function(err, data) {
+    self.s3.deleteObject(params, function(err) {
       if (err) return reject(err);
-      resolve(data);
+      resolve();
     });
   };
 
@@ -434,35 +439,38 @@ BloodySimpleS3.prototype.remove = function (key, callback) {
 BloodySimpleS3.prototype.move = function (source, destination, options, callback) {
   return this.copy(source, destination)
     .bind(this)
-    .then(function () {
-      return this.remove(source);
+    .then(function (data) {
+      return this.remove(source).return(data);
     })
     .nodeify(callback);
 };
 
 module.exports = BloodySimpleS3;
 
-// require('dotenv').load();
+require('dotenv').load();
 
-// var s3 = new BloodySimpleS3({
-//   bucket: 'sdk-analytics',
-//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//   sslEnabled: true
-// });
+var s3 = new BloodySimpleS3({
+  bucket: 'sdk-analytics',
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  sslEnabled: true
+});
 
-// s3.list('./temp')
-//   .then(function (arr) {
-//     console.log(arr);
-//     return s3.copy(arr[1].key, 'temp/0a')
-//       .then(function (data) {
-//         console.log(data);
-//         return s3.remove('temp/0a');
-//       });
-//   })
-//   .catch(function (err) {
-//     console.error(err);
-//   });
+s3.list('./temp')
+  .then(function (arr) {
+    console.log(arr);
+    return s3.copy(arr[1].key, 'temp/0a')
+      .then(function (data) {
+        console.log(data);
+        return s3.remove('temp/0a');
+      })
+      .then(function (data) {
+        console.log(data);
+      });
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
 
 // s3.upload({
 //   source: path.resolve(__dirname, '../LICENSE'),
