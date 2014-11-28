@@ -1,3 +1,7 @@
+## 0.2.2 - 2014-11-28
+
+* Normalize promise resolve values.
+
 ## 0.2.1 - 2014-11-28
 
 * Allow limit and cursor options on #list().
