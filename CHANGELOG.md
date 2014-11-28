@@ -1,3 +1,7 @@
+## 0.2.3 - 2014-11-28
+
+* Comment test code that wasn't supposed to be there.
+
 ## 0.2.2 - 2014-11-28
 
 * Normalize promise resolve values.
