@@ -335,14 +335,14 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
 };
 
 /**
- * Copies the given file to the designated key in S3.
+ * Creates a copy of a file that is already stored in Amazon S3.
  * @param {string} source relative path of the source file within the S3 bucket.
- * @param {string} key relative path of the copy within the S3 bucket.
+ * @param {string} destination relative path of the copy within the S3 bucket.
  * @param {object} [options] copy options.
  * @param {function} [callback] optional callback function, i.e. function(err, data).
  * @return {Promise}
  */
-BloodySimpleS3.prototype.copy = function (source, key, options, callback) {
+BloodySimpleS3.prototype.copy = function (source, destination, options, callback) {
   var self = this, params, resolver;
 
   // make sure source param is valid
@@ -351,10 +351,10 @@ BloodySimpleS3.prototype.copy = function (source, key, options, callback) {
     'expected string, received ' + typeof(source)
   )).nodeify(callback);
 
-  // make sure key param is valid
-  if (!_.isString(key)) return Promise.reject(new Error(
-    'Invalid key param; ' +
-    'expected string, received ' + typeof(key)
+  // make sure destination param is valid
+  if (!_.isString(destination)) return Promise.reject(new Error(
+    'Invalid destination param; ' +
+    'expected string, received ' + typeof(destination)
   )).nodeify(callback);
 
   // handle options param
@@ -373,8 +373,9 @@ BloodySimpleS3.prototype.copy = function (source, key, options, callback) {
 
   params = _.assign(options, {
     Bucket: this.bucket,
-    CopySource: path.join(this.bucket, source),
-    Key: key
+    CopySource: encodeURI(path.join(this.bucket, source)),
+    Key: destination,
+    MetadataDirective: 'COPY'
   });
 
   resolver = function(resolve, reject) {
@@ -388,7 +389,7 @@ BloodySimpleS3.prototype.copy = function (source, key, options, callback) {
 };
 
 /**
- * Removes the designated file from in S3.
+ * Removes the designated file from Amazon S3.
  * @param {string} key relative path within the S3 bucket.
  * @param {object} [options] remove options.
  * @param {function} [callback] optional callback function, i.e. function(err, data).
@@ -419,15 +420,15 @@ BloodySimpleS3.prototype.remove = function (key, callback) {
 };
 
 /**
- * Moves the given file to the designated key in S3.
+ * Moves/renames a file in Amazon S3.
  * @param {string} source relative path of the source file within the S3 bucket.
- * @param {string} key relative path of the copy within the S3 bucket.
+ * @param {string} destination relative path of the copy within the S3 bucket.
  * @param {object} [options] move options (similar to copy options).
  * @param {function} [callback] optional callback function, i.e. function(err, data).
  * @return {Promise}
  */
-BloodySimpleS3.prototype.move = function (source, key, options, callback) {
-  return this.copy(source, key)
+BloodySimpleS3.prototype.move = function (source, destination, options, callback) {
+  return this.copy(source, destination)
     .bind(this)
     .then(function () {
       return this.remove(source);
@@ -448,11 +449,11 @@ module.exports = BloodySimpleS3;
 
 // s3.list('./temp')
 //   .then(function (arr) {
-//     return s3.copy(arr[0].key, 'temp/a');
-//     // console.log(arr);
-//   })
-//   .then(function (data) {
-//     console.log(data);
+//     return s3.copy(arr[1].key, 'temp/0a')
+//       .then(function (data) {
+//         console.log(data);
+//         return s3.remove('temp/0a');
+//       });
 //   })
 //   .catch(function (err) {
 //     console.error(err);
