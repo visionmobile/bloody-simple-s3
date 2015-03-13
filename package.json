@@ -24,7 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.0.29",
-    "bluebird": "^2.3.11",
+    "bluebird": "^2.9.14",
     "dotenv": "^0.5.1",
     "lodash": "^3.5.0"
   }
