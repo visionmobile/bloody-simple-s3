@@ -23,7 +23,7 @@
   "author": "Dimitrios C. Michalakos <dimitris@jmike.gr>",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.0.29",
+    "aws-sdk": "^2.1.17",
     "bluebird": "^2.9.14",
     "dotenv": "^0.5.1",
     "lodash": "^3.5.0"
