@@ -1,6 +1,7 @@
 * [Methods](#methods)
   * [createReadStream([callback])](#createReadStream)
   * [writeFileStream(path, readable, [callback])](#writeFileStream)
+  * [list(dir, options, [callback])](#list)
 
 ## Methods
 
@@ -11,6 +12,10 @@ Creates and returns a readable stream to the designated file.
 ##### Parameters
 
 * `path` _(String)_ relative file path on S3
+
+##### Returns
+
+Readable Stream.
 
 ##### Example
 
@@ -27,7 +32,11 @@ Creates of updates the designated file, consuming a readable stream.
 
 * `path` _(String)_ relative file path on S3
 * `readable` _(ReadableStream)_ a readable file stream to pull file data
-* `callback` _(Function)_ optional callback function with (err, result) arguments
+* `callback` _(Function)_ optional callback function with (err, file) arguments
+
+##### Returns
+
+A promise resolving to the attributes of the file that was created/updated.
 
 ##### Example
 
@@ -35,7 +44,7 @@ Creates of updates the designated file, consuming a readable stream.
 var readable = fs.createReadStream('/local/dir/test.png');
 
 s3.writeFileStream('images/test.png', readable)
-  .then(function () {
+  .then(function (file) {
     // do something on success
   })
   .catch(function (err) {
@@ -45,7 +54,7 @@ s3.writeFileStream('images/test.png', readable)
 
 ### <a name="list" href="#list">#</a>list(dir, options, [callback]) -> Promise
 
-Lists (up to 1000) files in the designated directory
+Lists (up to 1000) files in the designated directory.
 
 ##### Parameters
 
@@ -55,6 +64,10 @@ Lists (up to 1000) files in the designated directory
   * `limit` _(Number)_ maximum number of files; must not exceed 1000
 * `callback` _(Function)_ optional callback function with (err, files) arguments
 
+##### Returns
+
+A promise resolving to an array of file attributes.
+
 ##### Example
 
 ```javascript
@@ -63,6 +76,32 @@ s3.list('images/', {limit: 10})
     files.forEach(function (file, i) {
       console.log(i, file);
     });
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
+```
+
+### <a name="copy" href="#copy">#</a>copy(source, destination, [callback]) -> Promise
+
+Copies the designated source file to the specified destination.
+
+##### Parameters
+
+* `source` _(String)_ relative source file path on S3
+* `destination` _(Object)_ relative destination file path on S3
+* `callback` _(Function)_ optional callback function with (err, file) arguments
+
+##### Returns
+
+A promise resolving to the attributes of the file that was copied.
+
+##### Example
+
+```javascript
+s3.copy('images/test.png', 'images/tost.png')
+  .then(function (file) {
+    // do something on success
   })
   .catch(function (err) {
     console.error(err);
