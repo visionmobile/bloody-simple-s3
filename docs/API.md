@@ -2,6 +2,7 @@
   * [createReadStream([callback])](#createReadStream)
   * [writeFileStream(path, readable, [callback])](#writeFileStream)
   * [list(dir, options, [callback])](#list)
+  * [copy(source, destination, [callback])](#copy)
 
 ## Methods
 
