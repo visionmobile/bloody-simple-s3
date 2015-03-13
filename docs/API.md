@@ -24,11 +24,11 @@ Creates a new bloody simple S3.
   * `accessKeyId` _(String)_ the AWS access key (required)
   * `secretAccessKey` _(String)_ the AWS secret access key (required)
   * `region` _(String)_ optional AWS region; defaults to "us-east-1"
-  * `sslEnabled` _(String)_ whether to enable SSL for requests
+  * `sslEnabled` _(Boolean)_ whether to enable SSL for requests
 
 ##### Throws
 
-_(Error)_ when options are invalid.
+_(Error)_ if options are invalid.
 
 ##### Example
 
@@ -53,6 +53,10 @@ Creates and returns a readable stream to the designated file.
 ##### Parameters
 
 * `path` _(String)_ relative file path on S3
+
+##### Throws
+
+_(Error)_ if path is invalid.
 
 ##### Returns
 
