@@ -1,3 +1,7 @@
+# Bloody Simple S3
+
+## Table of Contents
+
 * [Constructor](#constructor)
 * [Methods](#methods)
   * [createReadStream([callback])](#createReadStream)
