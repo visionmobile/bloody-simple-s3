@@ -3,6 +3,7 @@
   * [writeFileStream(path, readable, [callback])](#writeFileStream)
   * [list(dir, options, [callback])](#list)
   * [copy(source, destination, [callback])](#copy)
+  * [remove(path, [callback])](#remove)
 
 ## Methods
 
@@ -102,6 +103,31 @@ A promise resolving to the attributes of the file that was copied.
 ```javascript
 s3.copy('images/test.png', 'images/tost.png')
   .then(function (file) {
+    // do something on success
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
+```
+
+### <a name="remove" href="#remove">#</a>remove(path, [callback]) -> Promise
+
+Removes the designated file from S3.
+
+##### Parameters
+
+* `path` _(String)_ relative file path on S3
+* `callback` _(Function)_ optional callback function with (err) arguments
+
+##### Returns
+
+A empty promise.
+
+##### Example
+
+```javascript
+s3.remove('images/tost.png')
+  .then(function () {
     // do something on success
   })
   .catch(function (err) {
