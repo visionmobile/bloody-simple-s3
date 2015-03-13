@@ -6,6 +6,7 @@
   * [move(source, destination, [callback])](#move)
   * [remove(path, [callback])](#remove)
   * [download(path, options, [callback])](#download)
+  * [upload(path, options, [callback])](#upload)
 
 ## Methods
 
@@ -171,7 +172,7 @@ Downloads the designated file from S3 to the local filesystem.
 
 * `path` _(String)_ relative file path on S3
 * `options` _(Object)_ download options
-  * `destination` _(String)_ optional destination file path; defaults to `os.tmpdir()`
+  * `destination` _(String)_ destination file path; defaults to `os.tmpdir()`
 * `callback` _(Function)_ optional callback function with (err, localPath) arguments
 
 ##### Returns
@@ -184,6 +185,33 @@ A promise resolving to the (local) path of the downloaded file.
 s3.download('images/test-123.png', {destination: '/Users/jmike/image.png'})
   .then(function (localPath) {
     console.log(localPath); // prints "/Users/jmike/image.png"
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
+```
+
+### <a name="upload" href="#upload">#</a>upload(path, options, [callback]) -> Promise
+
+Uploads the designated file from the local filesystem to S3.
+
+##### Parameters
+
+* `path` _(String)_ relative or absolute file path on the local filesystem
+* `options` _(Object)_ download options
+  * `key` _(String)_ destination file path on S3
+* `callback` _(Function)_ optional callback function with (err, file) arguments
+
+##### Returns
+
+A promise resolving to the attributes of the uploaded file.
+
+##### Example
+
+```javascript
+s3.upload('/Users/jmike/image.png', {key: 'images/jmike.png'})
+  .then(function (file) {
+    // do something on success
   })
   .catch(function (err) {
     console.error(err);
