@@ -3,6 +3,7 @@
   * [writeFileStream(path, readable, [callback])](#writeFileStream)
   * [list(dir, options, [callback])](#list)
   * [copy(source, destination, [callback])](#copy)
+  * [move(source, destination, [callback])](#move)
   * [remove(path, [callback])](#remove)
 
 ## Methods
@@ -102,6 +103,32 @@ A promise resolving to the attributes of the file that was copied.
 
 ```javascript
 s3.copy('images/test.png', 'images/tost.png')
+  .then(function (file) {
+    // do something on success
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
+```
+
+### <a name="move" href="#move">#</a>move(source, destination, [callback]) -> Promise
+
+Moves the designated file within S3.
+
+##### Parameters
+
+* `source` _(String)_ relative source file path on S3
+* `destination` _(Object)_ relative destination file path on S3
+* `callback` _(Function)_ optional callback function with (err, file) arguments
+
+##### Returns
+
+A promise resolving to the attributes of the file that was moved.
+
+##### Example
+
+```javascript
+s3.move('images/test.png', 'images/test-123.png')
   .then(function (file) {
     // do something on success
   })
