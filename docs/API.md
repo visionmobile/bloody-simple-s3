@@ -34,9 +34,35 @@ Creates of updates the designated file, consuming a readable stream.
 ```javascript
 var readable = fs.createReadStream('/local/dir/test.png');
 
-return s3.writeFileStream('images/test.png', readable)
+s3.writeFileStream('images/test.png', readable)
   .then(function () {
     // do something on success
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
+```
+
+### <a name="list" href="#list">#</a>list(dir, options, [callback]) -> Promise
+
+Lists (up to 1000) files in the designated directory
+
+##### Parameters
+
+* `dir` _(String)_ relative directory path on S3
+* `options` _(Object)_ list options
+  * `cursor` _(String)_ cursor used for pagination
+  * `limit` _(Number)_ maximum number of files; must not exceed 1000
+* `callback` _(Function)_ optional callback function with (err, files) arguments
+
+##### Example
+
+```javascript
+s3.list('images/', {limit: 10})
+  .then(function (files) {
+    files.forEach(function (file, i) {
+      console.log(i, file);
+    });
   })
   .catch(function (err) {
     console.error(err);
