@@ -1,10 +1,10 @@
-var path = require('path'),
-  fs = require('fs'),
-  os = require('os'),
-  stream = require('stream'),
-  AWS = require('aws-sdk'),
-  Promise = require('bluebird'),
-  _ = require('lodash');
+var path = require('path');
+var fs = require('fs');
+var os = require('os');
+var stream = require('stream');
+var AWS = require('aws-sdk');
+var Promise = require('bluebird');
+var _ = require('lodash');
 
 /**
  * Constructs and returns a new bloody simple S3 client.
@@ -109,7 +109,8 @@ BloodySimpleS3.prototype.createReadStream = function (key) {
  * @return {Promise}
  */
 BloodySimpleS3.prototype.download = function (key, options, callback) {
-  var self = this, resolver;
+  var _this = this;
+  var resolver;
 
   // make sure key param is valid
   if (!_.isString(key)) {
@@ -156,7 +157,7 @@ BloodySimpleS3.prototype.download = function (key, options, callback) {
         ));
       }
 
-      readable = self.createReadStream(key);
+      readable = _this.createReadStream(key);
       writable = fs.createWriteStream(file);
       readable.pipe(writable);
 
@@ -178,7 +179,9 @@ BloodySimpleS3.prototype.download = function (key, options, callback) {
  * @return {Promise}
  */
 BloodySimpleS3.prototype.writeFileStream = function (key, readable, callback) {
-  var self = this, params, resolver;
+  var _this = this;
+  var params;
+  var resolver;
 
   // make sure key param is valid
   if (!_.isString(key)) {
@@ -199,11 +202,11 @@ BloodySimpleS3.prototype.writeFileStream = function (key, readable, callback) {
   params = {
     Key: key,
     Body: readable,
-    Bucket: self.bucket
+    Bucket: _this.bucket
   };
 
   resolver = function(resolve, reject) {
-    self.s3.putObject(params, function (err) {
+    _this.s3.putObject(params, function (err) {
       if (err) return reject(err);
       resolve({key: key});
     });
@@ -221,7 +224,8 @@ BloodySimpleS3.prototype.writeFileStream = function (key, readable, callback) {
  * @return {Promise}
  */
 BloodySimpleS3.prototype.upload = function (file, options, callback) {
-  var self = this, resolver;
+  var _this = this;
+  var resolver;
 
   // make sure file param is valid
   if (!_.isString(file)) {
@@ -269,7 +273,7 @@ BloodySimpleS3.prototype.upload = function (file, options, callback) {
 
       readable = fs.createReadStream(file);
 
-      resolve(self.writeFileStream(options.key, readable));
+      resolve(_this.writeFileStream(options.key, readable));
     });
   };
 
@@ -286,7 +290,9 @@ BloodySimpleS3.prototype.upload = function (file, options, callback) {
  * @return {Promise}
  */
 BloodySimpleS3.prototype.list = function (dir, options, callback) {
-  var self = this, params, resolver;
+  var _this = this;
+  var params;
+  var resolver;
 
   // make sure dir param is valid
   if (!_.isString(dir)) {
@@ -318,7 +324,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
   };
 
   resolver = function(resolve, reject) {
-    self.s3.listObjects(params, function(err, data) {
+    _this.s3.listObjects(params, function(err, data) {
       var arr;
 
       if (err) return reject(err);
@@ -347,7 +353,9 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
  * @return {Promise}
  */
 BloodySimpleS3.prototype.copy = function (source, destination, options, callback) {
-  var self = this, params, resolver;
+  var _this = this;
+  var params;
+  var resolver;
 
   // make sure source param is valid
   if (!_.isString(source)) return Promise.reject(new Error(
@@ -383,7 +391,7 @@ BloodySimpleS3.prototype.copy = function (source, destination, options, callback
   });
 
   resolver = function(resolve, reject) {
-    self.s3.copyObject(params, function(err, data) {
+    _this.s3.copyObject(params, function(err, data) {
       if (err) return reject(err);
       resolve({
         key: destination,
@@ -403,7 +411,9 @@ BloodySimpleS3.prototype.copy = function (source, destination, options, callback
  * @return {Promise}
  */
 BloodySimpleS3.prototype.remove = function (key, callback) {
-  var self = this, params, resolver;
+  var _this = this;
+  var params;
+  var resolver;
 
   // make sure key param is valid
   if (!_.isString(key)) return Promise.reject(new Error(
@@ -417,7 +427,7 @@ BloodySimpleS3.prototype.remove = function (key, callback) {
   };
 
   resolver = function(resolve, reject) {
-    self.s3.deleteObject(params, function(err) {
+    _this.s3.deleteObject(params, function(err) {
       if (err) return reject(err);
       resolve();
     });
