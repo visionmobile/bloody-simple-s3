@@ -5,6 +5,7 @@
   * [copy(source, destination, [callback])](#copy)
   * [move(source, destination, [callback])](#move)
   * [remove(path, [callback])](#remove)
+  * [download(path, options, [callback])](#download)
 
 ## Methods
 
@@ -156,6 +157,33 @@ A empty promise.
 s3.remove('images/tost.png')
   .then(function () {
     // do something on success
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
+```
+
+### <a name="download" href="#download">#</a>download(path, options, [callback]) -> Promise
+
+Downloads the designated file from S3 to the local filesystem.
+
+##### Parameters
+
+* `path` _(String)_ relative file path on S3
+* `options` _(Object)_ download options
+  * `destination` _(String)_ optional destination file path; defaults to `os.tmpdir()`
+* `callback` _(Function)_ optional callback function with (err, localPath) arguments
+
+##### Returns
+
+A promise resolving to the (local) path of the downloaded file.
+
+##### Example
+
+```javascript
+s3.download('images/test-123.png', {destination: '/Users/jmike/image.png'})
+  .then(function (localPath) {
+    console.log(localPath); // prints "/Users/jmike/image.png"
   })
   .catch(function (err) {
     console.error(err);
