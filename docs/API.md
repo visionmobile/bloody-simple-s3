@@ -1,3 +1,4 @@
+* [Constructor](#constructor)
 * [Methods](#methods)
   * [createReadStream([callback])](#createReadStream)
   * [writeFileStream(path, readable, [callback])](#writeFileStream)
@@ -7,6 +8,37 @@
   * [remove(path, [callback])](#remove)
   * [download(path, options, [callback])](#download)
   * [upload(path, options, [callback])](#upload)
+
+## Constructor
+
+Creates a new bloody simple S3.
+
+##### Parameters
+
+* `options` _(Object)_ S3 client options (required)
+  * `bucket` _(String)_ the name of the S3 bucket to connect to (required)
+  * `accessKeyId` _(String)_ the AWS access key (required)
+  * `secretAccessKey` _(String)_ the AWS secret access key (required)
+  * `region` _(String)_ optional AWS region; defaults to "us-east-1"
+  * `sslEnabled` _(String)_ whether to enable SSL for requests
+
+##### Throws
+
+_(Error)_ when options are invalid.
+
+##### Example
+
+```javascript
+var S3 = require('bloody-simple-s3');
+
+var s3 = new S3({
+  bucket: 'bucket-name',
+  region: 'us-east-1',
+  accessKeyId: 'AKIA-access-key',
+  secretAccessKey: 'secret-access-key',
+  sslEnabled: true
+});
+```
 
 ## Methods
 
