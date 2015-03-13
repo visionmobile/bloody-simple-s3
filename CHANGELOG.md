@@ -1,3 +1,8 @@
+## 0.2.5 - 2015-03-13
+
+* Refactor to match the Airbnb JS guidelines
+* Update npm dependencies to their latest version
+
 ## 0.2.4 - 2014-11-28
 
 * Use #encodeURIComponent() instead of #encodeURI() to encode @CopySource.
