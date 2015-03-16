@@ -150,6 +150,7 @@ BloodySimpleS3.prototype.writeFileStream = function (path, readable, callback) {
       if (err) return reject(err);
 
       resolve({
+        key: path, // legacy
         path: path
       });
     });

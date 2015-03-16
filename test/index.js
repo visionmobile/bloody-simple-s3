@@ -1,40 +1,17 @@
-require('dotenv').load(); // load environmental variables
-
-var Mocha = require('mocha'),
-  fs = require('fs'),
-  path = require('path'),
-  mocha;
-
-function loadFiles(directory) {
-  fs.readdirSync(directory)
-    .filter(function (file) { // exclude index.js
-      return file !== 'index.js';
-    })
-    .forEach(function (file) {
-      var location, stats;
-
-      location = path.join(directory, file);
-      stats = fs.statSync(location);
-
-      if (stats.isDirectory()) {
-        loadFiles(location); // traverse directory
-      } else if (file.substr(-3) === '.js') { // keep only .js files
-        mocha.addFile(location);
-      }
-    });
-}
+var path = require('path');
+var Mocha = require('mocha');
 
 // init mocha
-mocha = new Mocha({
+var mocha = new Mocha({
   reporter: 'spec',
-  timeout: 10000 // 10 secs
+  timeout: 30000 // 30 secs
 });
 
 // load the test files
-loadFiles(__dirname);
+mocha.addFile(path.resolve(__dirname, './s3'));
 
 // run the tests
-mocha.run(function(failures){
+mocha.run(function (failures) {
   process.on('exit', function () {
     process.exit(failures);
   });
