@@ -81,7 +81,9 @@ Creates of updates the designated file, consuming a readable stream.
 
 ##### Returns
 
-A promise resolving to the attributes of the file that was created/updated.
+A promise resolving to the attributes of the created/updated file, i.e. an object with the following properties:
+
+* `path` _(String)_ absolute file path in local filesystem
 
 ##### Example
 
@@ -111,7 +113,11 @@ Lists (up to 1000) files in the designated directory.
 
 ##### Returns
 
-A promise resolving to an array of file attributes.
+A promise resolving to an array of file attributes, i.e.
+
+* `path` _(String)_ relative file path on S3
+* `size` _(Number)_ file size
+* `last_modified` _(Date)_ date file was last modified
 
 ##### Example
 
@@ -119,7 +125,7 @@ A promise resolving to an array of file attributes.
 s3.list('images/', {limit: 10})
   .then(function (files) {
     files.forEach(function (file, i) {
-      console.log(i, file);
+      console.log(i, file.path);
     });
   })
   .catch(function (err) {
@@ -139,7 +145,10 @@ Copies the designated source file to the specified destination.
 
 ##### Returns
 
-A promise resolving to the attributes of the file that was copied.
+A promise resolving to the attributes of the file that was copied, i.e.
+
+* `path` _(String)_ relative file path on S3
+* `last_modified` _(Date)_ date file was last modified
 
 ##### Example
 
@@ -217,14 +226,16 @@ Downloads the designated file from S3 to the local filesystem.
 
 ##### Returns
 
-A promise resolving to the (local) path of the downloaded file.
+A promise resolving to the attributes of the downloaded file, i.e. an object with the following properties:
+
+* `path` _(String)_ absolute file path on the local filesystem
 
 ##### Example
 
 ```javascript
 s3.download('images/test-123.png', {destination: '/Users/jmike/image.png'})
-  .then(function (localPath) {
-    console.log(localPath); // prints "/Users/jmike/image.png"
+  .then(function (file) {
+    console.log(file.path); // prints "/Users/jmike/image.png"
   })
   .catch(function (err) {
     console.error(err);
@@ -239,17 +250,19 @@ Uploads the designated file from the local filesystem to S3.
 
 * `path` _(String)_ relative or absolute file path on the local filesystem
 * `options` _(Object)_ download options
-  * `key` _(String)_ destination file path on S3
+  * `destination` _(String)_ destination file path on S3
 * `callback` _(Function)_ optional callback function with (err, file) arguments
 
 ##### Returns
 
-A promise resolving to the attributes of the uploaded file.
+A promise resolving to the attributes of the uploaded file, i.e. an object with the followin properties:
+
+* `path` _(String)_ relative file path on S3
 
 ##### Example
 
 ```javascript
-s3.upload('/Users/jmike/image.png', {key: 'images/jmike.png'})
+s3.upload('/Users/jmike/image.png', {destination: 'images/jmike.png'})
   .then(function (file) {
     // do something on success
   })
