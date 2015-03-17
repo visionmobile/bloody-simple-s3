@@ -2,6 +2,8 @@
 
 A bloody simple S3 client, based on the official AWS SDK.
 
+[ ![Build Status for visionmobile/bloody-simple-s3](https://codeship.com/projects/e66d6350-aebb-0132-cc2e-72504bd694d9/status?branch=master)](https://codeship.com/projects/68954)
+
 #### Features
 
 * Promise and callback interface;
