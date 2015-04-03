@@ -351,5 +351,6 @@ BloodySimpleS3.prototype.move = function (source, destination, options, callback
     .nodeify(callback);
 };
 
+BloodySimpleS3.prototype.rename = BloodySimpleS3.prototype.move;
 
 module.exports = BloodySimpleS3;
