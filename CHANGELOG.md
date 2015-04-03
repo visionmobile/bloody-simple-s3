@@ -1,3 +1,7 @@
+## 0.3.0 - 2015-04-03
+
+* Add #rename as alias of #move
+
 ## 0.3.0-alpha - 2015-03-16
 
 * Refactor to provide a consistent API
