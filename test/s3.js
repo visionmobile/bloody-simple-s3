@@ -19,12 +19,12 @@ describe('Bloody Simple S3', function () {
     var len = 0;
 
     it('uploads file to S3', function (done) {
-      s3.upload('../assets/soon.jpg', {destination: 'images/soon.jpg'})
+      s3.upload('../assets/soon.jpg', 'images/soon.jpg')
         .then(function (file) {
           assert.isObject(file);
-          assert.property(file, 'path');
-          done();
+          assert.property(file, 'name');
         })
+        .then(done)
         .catch(done);
     });
 
@@ -36,9 +36,8 @@ describe('Bloody Simple S3', function () {
 
           // update length
           len = files.length;
-
-          done();
         })
+        .then(done)
         .catch(done);
     });
 
@@ -46,11 +45,10 @@ describe('Bloody Simple S3', function () {
       s3.copy('images/soon.jpg', 'images/sooner.jpg')
         .then(function (file) {
           assert.isObject(file);
-          assert.property(file, 'path');
-          assert.strictEqual(file.path, 'images/sooner.jpg');
-
-          done();
+          assert.property(file, 'name');
+          assert.strictEqual(file.name, 'images/sooner.jpg');
         })
+        .then(done)
         .catch(done);
     });
 
@@ -61,17 +59,14 @@ describe('Bloody Simple S3', function () {
 
           // update length
           len = files.length;
-
-          done();
         })
+        .then(done)
         .catch(done);
     });
 
     it('removes file from S3', function (done) {
       s3.remove('images/sooner.jpg')
-        .then(function () {
-          done();
-        })
+        .then(done)
         .catch(done);
     });
 
@@ -82,9 +77,8 @@ describe('Bloody Simple S3', function () {
 
           // update length
           len = files.length;
-
-          done();
         })
+        .then(done)
         .catch(done);
     });
 
@@ -92,10 +86,9 @@ describe('Bloody Simple S3', function () {
       s3.move('images/soon.jpg', 'images/soonest.jpg')
         .then(function (file) {
           assert.isObject(file);
-          assert.property(file, 'path');
-
-          done();
+          assert.property(file, 'name');
         })
+        .then(done)
         .catch(done);
     });
 
@@ -103,21 +96,18 @@ describe('Bloody Simple S3', function () {
       s3.download('images/soonest.jpg')
         .then(function (file) {
           assert.isObject(file);
-          assert.property(file, 'path');
+          assert.property(file, 'name');
 
           // garbage collect
-          fs.unlinkSync(file.path);
-
-          done();
+          fs.unlinkSync(file.name);
         })
+        .then(done)
         .catch(done);
     });
 
     it('removes all files from S3', function (done) {
       s3.remove('images/soonest.jpg')
-        .then(function () {
-          done();
-        })
+        .then(done)
         .catch(done);
     });
 

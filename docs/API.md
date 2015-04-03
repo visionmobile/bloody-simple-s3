@@ -4,14 +4,15 @@
 
 * [Constructor](#constructor)
 * [Methods](#methods)
-  * [createReadStream([callback])](#createReadStream)
-  * [writeFileStream(path, readable, [callback])](#writeFileStream)
+  * [createReadStream(filename)](#createReadStream)
+  * [writeFile(filename, contents, [callback])](#writeFile)
   * [list(dir, options, [callback])](#list)
   * [copy(source, destination, [callback])](#copy)
   * [move(source, destination, [callback])](#move)
+  * [rename(source, destination, [callback])](#rename)
   * [remove(path, [callback])](#remove)
-  * [download(path, options, [callback])](#download)
-  * [upload(path, options, [callback])](#upload)
+  * [download(source, [destination], [callback])](#download)
+  * [upload(source, [destination], [callback])](#upload)
 
 ## Constructor
 
@@ -46,17 +47,17 @@ var s3 = new S3({
 
 ## Methods
 
-### <a name="createReadStream" href="#createReadStream">#</a>createReadStream(path) -> ReadableStream
+### <a name="createReadStream" href="#createReadStream">#</a>createReadStream(filename) -> ReadableStream
 
 Creates and returns a readable stream to the designated file.
 
 ##### Parameters
 
-* `path` _(String)_ relative file path on S3
+* `filename` _(String)_ relative file path on S3
 
 ##### Throws
 
-_(Error)_ if path is invalid.
+_(Error)_ if filename is invalid.
 
 ##### Returns
 
@@ -69,28 +70,28 @@ var readable = s3.createReadStream('images/test.png');
 // do something with readable stream
 ```
 
-### <a name="writeFileStream" href="#writeFileStream">#</a>writeFileStream(path, readable, [callback]) -> Promise
+### <a name="writeFile" href="#writeFile">#</a>writeFile(filename, contents, [callback]) -> Promise
 
-Creates of updates the designated file, consuming a readable stream.
+Creates of updates the designated file with the given contents.
 
 ##### Parameters
 
-* `path` _(String)_ relative file path on S3
-* `readable` _(ReadableStream)_ a readable file stream to pull file data
+* `filename` _(String)_ file path on S3
+* `contents` _(ReadableStream, Buffer, String)_ the contents of the file
 * `callback` _(Function)_ optional callback function with (err, file) arguments
 
 ##### Returns
 
 A promise resolving to the attributes of the created/updated file, i.e. an object with the following properties:
 
-* `path` _(String)_ absolute file path in local filesystem
+* `name` _(String)_ relative file path on S3
 
 ##### Example
 
 ```javascript
 var readable = fs.createReadStream('/local/dir/test.png');
 
-s3.writeFileStream('images/test.png', readable)
+s3.writeFile('images/test.png', readable)
   .then(function (file) {
     // do something on success
   })
@@ -115,7 +116,7 @@ Lists (up to 1000) files in the designated directory.
 
 A promise resolving to an array of file attributes, i.e.
 
-* `path` _(String)_ relative file path on S3
+* `name` _(String)_ relative file path on S3
 * `size` _(Number)_ file size
 * `last_modified` _(Date)_ date file was last modified
 
@@ -125,7 +126,7 @@ A promise resolving to an array of file attributes, i.e.
 s3.list('images/', {limit: 10})
   .then(function (files) {
     files.forEach(function (file, i) {
-      console.log(i, file.path);
+      console.log(i, file.name);
     });
   })
   .catch(function (err) {
@@ -133,21 +134,21 @@ s3.list('images/', {limit: 10})
   });
 ```
 
-### <a name="copy" href="#copy">#</a>copy(source, destination, [callback]) -> Promise
+### <a name="copy" href="#copy">#</a>copy(source, target, [callback]) -> Promise
 
-Copies the designated source file to the specified destination.
+Copies the designated source file to the specified target.
 
 ##### Parameters
 
 * `source` _(String)_ relative source file path on S3
-* `destination` _(Object)_ relative destination file path on S3
+* `target` _(Object)_ relative target file path on S3
 * `callback` _(Function)_ optional callback function with (err, file) arguments
 
 ##### Returns
 
 A promise resolving to the attributes of the file that was copied, i.e.
 
-* `path` _(String)_ relative file path on S3
+* `name` _(String)_ relative file path on S3
 * `last_modified` _(Date)_ date file was last modified
 
 ##### Example
@@ -162,14 +163,14 @@ s3.copy('images/test.png', 'images/tost.png')
   });
 ```
 
-### <a name="move" href="#move">#</a>move(source, destination, [callback]) -> Promise
+### <a name="move" href="#move">#</a>move(source, target, [callback]) -> Promise
 
 Moves the designated file within S3.
 
 ##### Parameters
 
 * `source` _(String)_ relative source file path on S3
-* `destination` _(Object)_ relative destination file path on S3
+* `target` _(Object)_ relative target file path on S3
 * `callback` _(Function)_ optional callback function with (err, file) arguments
 
 ##### Returns
@@ -188,18 +189,22 @@ s3.move('images/test.png', 'images/test-123.png')
   });
 ```
 
-### <a name="remove" href="#remove">#</a>remove(path, [callback]) -> Promise
+### <a name="rename" href="#rename">#</a>rename(source, target, [callback]) -> Promise
+
+Alias of [#move](#move).
+
+### <a name="remove" href="#remove">#</a>remove(filename, [callback]) -> Promise
 
 Removes the designated file from S3.
 
 ##### Parameters
 
-* `path` _(String)_ relative file path on S3
+* `filename` _(String)_ relative file path on S3
 * `callback` _(Function)_ optional callback function with (err) arguments
 
 ##### Returns
 
-A empty promise.
+An empty promise.
 
 ##### Example
 
@@ -213,56 +218,54 @@ s3.remove('images/tost.png')
   });
 ```
 
-### <a name="download" href="#download">#</a>download(path, options, [callback]) -> Promise
+### <a name="download" href="#download">#</a>download(source, target, [callback]) -> Promise
 
 Downloads the designated file from S3 to the local filesystem.
 
 ##### Parameters
 
-* `path` _(String)_ relative file path on S3
-* `options` _(Object)_ download options
-  * `destination` _(String)_ destination file path; defaults to `os.tmpdir()`
+* `source` _(String)_ relative file path on S3
+* `target` _(String)_ local file or directory path; defaults to `os.tmpdir()`
 * `callback` _(Function)_ optional callback function with (err, localPath) arguments
 
 ##### Returns
 
 A promise resolving to the attributes of the downloaded file, i.e. an object with the following properties:
 
-* `path` _(String)_ absolute file path on the local filesystem
+* `name` _(String)_ absolute file path on the local filesystem
 
 ##### Example
 
 ```javascript
-s3.download('images/test-123.png', {destination: '/Users/jmike/image.png'})
+s3.download('images/test-123.png', '/Users/jmike/image.png')
   .then(function (file) {
-    console.log(file.path); // prints "/Users/jmike/image.png"
+    console.log(file.name); // prints "/Users/jmike/image.png"
   })
   .catch(function (err) {
     console.error(err);
   });
 ```
 
-### <a name="upload" href="#upload">#</a>upload(path, options, [callback]) -> Promise
+### <a name="upload" href="#upload">#</a>upload(source, target, [callback]) -> Promise
 
 Uploads the designated file from the local filesystem to S3.
 
 ##### Parameters
 
-* `path` _(String)_ relative or absolute file path on the local filesystem
-* `options` _(Object)_ download options
-  * `destination` _(String)_ destination file path on S3
+* `source` _(String)_ relative or absolute file path on the local filesystem
+* `target` _(String)_ target file path on S3
 * `callback` _(Function)_ optional callback function with (err, file) arguments
 
 ##### Returns
 
-A promise resolving to the attributes of the uploaded file, i.e. an object with the followin properties:
+A promise resolving to the attributes of the uploaded file, i.e. an object with the following properties:
 
-* `path` _(String)_ relative file path on S3
+* `name` _(String)_ relative file path on S3
 
 ##### Example
 
 ```javascript
-s3.upload('/Users/jmike/image.png', {destination: 'images/jmike.png'})
+s3.upload('/Users/jmike/image.png', 'images/jmike.png')
   .then(function (file) {
     // do something on success
   })

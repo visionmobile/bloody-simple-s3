@@ -1,4 +1,4 @@
-var pathjs = require('path');
+var path = require('path');
 var fs = require('fs');
 var os = require('os');
 var stream = require('stream');
@@ -6,13 +6,11 @@ var AWS = require('aws-sdk');
 var Promise = require('bluebird');
 var _ = require('lodash');
 
-
 function BloodySimpleS3(options) {
   if (!_.isPlainObject(options)) {
     throw new Error('Invalid options param; expected object, received ' + typeof(options));
   }
 
-  // set default options
   options = _.defaults(options, {
     region: 'us-east-1',
     sslEnabled: true
@@ -39,6 +37,7 @@ function BloodySimpleS3(options) {
   }
 
   this.bucket = options.bucket;
+
   this.s3 = new AWS.S3({
     accessKeyId: options.accessKeyId,
     secretAccessKey: options.secretAccessKey,
@@ -48,166 +47,152 @@ function BloodySimpleS3(options) {
   });
 }
 
-
-BloodySimpleS3.prototype.createReadStream = function (path) {
+BloodySimpleS3.prototype.createReadStream = function (filename) {
   var params;
 
-  if (!_.isString(path)) {
-    throw new Error('Invalid path param; expected string, received ' + typeof(path));
+  if (!_.isString(filename)) {
+    throw new Error('Invalid filename param; expected string, received ' + typeof(filename));
   }
 
   params = {
-    Key: path,
+    Key: filename,
     Bucket: this.bucket
   };
 
   return this.s3.getObject(params).createReadStream();
 };
 
-
-BloodySimpleS3.prototype.download = function (path, options, callback) {
+BloodySimpleS3.prototype.download = function (source, target, callback) {
   var _this = this;
   var resolver;
 
-  if (!_.isString(path)) {
-    return Promise.reject(new Error('Invalid path param; expected string, received ' + typeof(path)))
+  if (!_.isString(source)) {
+    return Promise.reject(new Error('Invalid source param; expected string, received ' + typeof(source)))
       .nodeify(callback);
   }
 
-  if (_.isFunction(options)) {
-    callback = options;
-    options = {};
-  } else if (_.isUndefined(options)) {
-    options = {};
+  if (_.isFunction(target)) {
+    callback = target;
+    target = os.tmpdir();
+  } else if (_.isUndefined(target)) {
+    target = os.tmpdir();
   }
 
-  if (!_.isPlainObject(options)) {
-    return Promise.reject(new Error('Invalid options param; expected object, received ' + typeof(options)))
+  if (!_.isString(target)) {
+    return Promise.reject(new Error('Invalid target param; expected string, received ' + typeof(target)))
       .nodeify(callback);
   }
-
-  // set default options
-  options = _.defaults(options, {
-    destination: os.tmpdir()
-  });
 
   resolver = function(resolve, reject) {
-    fs.stat(options.destination, function (err, stats) {
+    fs.stat(target, function (err, stats) {
       var file, writable, readable;
 
       if (err) return reject(err);
 
       if (stats.isDirectory()) {
-        file = pathjs.join(options.destination, pathjs.basename(path));
+        file = path.join(target, path.basename(source));
 
       } else if (stats.isFile()) {
-        file = options.destination;
+        file = target;
 
       } else {
-        return reject(new Error('Invalid destination path; expected folder or file'));
+        return reject(new Error('Invalid target path; expected directory or file'));
       }
 
-      readable = _this.createReadStream(path);
+      readable = _this.createReadStream(source);
       writable = fs.createWriteStream(file);
       readable.pipe(writable);
 
       readable.on('error', reject);
+
       writable.on('finish', function () {
-        resolve({
-          path: file
-        });
+        resolve({name: file});
       });
     });
   };
 
-  return new Promise(resolver).nodeify(callback);
+  return new Promise(resolver)
+    .nodeify(callback);
 };
 
-
-BloodySimpleS3.prototype.writeFileStream = function (path, readable, callback) {
+BloodySimpleS3.prototype.writeFile = function (filename, contents, callback) {
   var _this = this;
   var params;
   var resolver;
 
-  if (!_.isString(path)) {
-    return Promise.reject(new Error('Invalid path param; expected string, received ' + typeof(path)))
+  if (!_.isString(filename)) {
+    return Promise.reject(new Error('Invalid filename param; expected string, received ' + typeof(filename)))
       .nodeify(callback);
   }
 
-  if (!(readable instanceof stream.Readable)) {
-    return Promise.reject(new Error('Invalid readable param; expected ReadableStream, received ' + typeof(readable)))
+  if (
+    !(contents instanceof stream.Readable) &&
+    !(Buffer.isBuffer(contents)) &&
+    !_.isString(contents)
+  ) {
+    return Promise.reject(new Error('Invalid contents param; expected readable stream, buffer or string, received ' + typeof(contents)))
       .nodeify(callback);
   }
 
   params = {
-    Key: path,
-    Body: readable,
+    Key: filename,
+    Body: contents,
     Bucket: _this.bucket
   };
 
   resolver = function(resolve, reject) {
     _this.s3.putObject(params, function (err) {
       if (err) return reject(err);
-
-      resolve({
-        key: path, // legacy
-        path: path
-      });
+      resolve({name: filename});
     });
   };
 
-  return new Promise(resolver).nodeify(callback);
+  return new Promise(resolver)
+    .nodeify(callback);
 };
 
-
-BloodySimpleS3.prototype.upload = function (path, options, callback) {
+BloodySimpleS3.prototype.upload = function (source, target, callback) {
   var _this = this;
   var resolver;
 
-  if (!_.isString(path)) {
-    return Promise.reject(new Error('Invalid path param; expected string, received ' + typeof(path)))
+  if (!_.isString(source)) {
+    return Promise.reject(new Error('Invalid source param; expected string, received ' + typeof(source)))
       .nodeify(callback);
   }
 
-  if (_.isFunction(options)) {
-    callback = options;
-    options = {};
-  } else if (_.isUndefined(options)) {
-    options = {};
+  source = path.resolve(__dirname, source);
+
+  if (_.isFunction(target)) {
+    callback = target;
+    target = path.basename(source);
+  } else if (_.isUndefined(target)) {
+    target = path.basename(source);
   }
 
-  if (!_.isPlainObject(options)) {
-    return Promise.reject(new Error('Invalid options param; expected object, received ' + typeof(options)))
+  if (!_.isString(target)) {
+    return Promise.reject(new Error('Invalid target param; expected string, received ' + typeof(target)))
       .nodeify(callback);
   }
-
-  // resolve (possible) relative path
-  path = pathjs.resolve(__dirname, path);
-
-  // set default options
-  options = _.defaults(options, {
-    destination: pathjs.basename(path)
-  });
 
   resolver = function(resolve, reject) {
-    fs.stat(path, function (err, stats) {
+    fs.stat(source, function (err, stats) {
       var readable;
 
       if (err) return reject(err);
 
       if (!stats.isFile()) {
-        return reject(new Error('File path is invalid; you must reference an actual file'));
+        return reject(new Error('Source is invalid; you must reference a file'));
       }
 
-      readable = fs.createReadStream(path);
+      readable = fs.createReadStream(source);
 
-      resolve(_this.writeFileStream(options.destination, readable));
+      resolve(_this.writeFile(target, readable));
     });
   };
 
-  return new Promise(resolver).nodeify(callback);
+  return new Promise(resolver)
+    .nodeify(callback);
 };
-
 
 BloodySimpleS3.prototype.list = function (dir, options, callback) {
   var _this = this;
@@ -233,7 +218,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
 
   params = {
     Bucket: this.bucket,
-    Prefix: pathjs.normalize(dir),
+    Prefix: path.normalize(dir),
     Marker: options.cursor,
     MaxKeys: options.limit
   };
@@ -246,8 +231,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
 
       arr = data.Contents.map(function (obj) {
         return {
-          key: obj.Key, // legacy
-          path: obj.Key,
+          name: obj.Key,
           size: obj.Size,
           last_modified: obj.LastModified
         };
@@ -260,8 +244,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
   return new Promise(resolver).nodeify(callback);
 };
 
-
-BloodySimpleS3.prototype.copy = function (source, destination, options, callback) {
+BloodySimpleS3.prototype.copy = function (source, target, options, callback) {
   var _this = this;
   var params;
   var resolver;
@@ -271,8 +254,8 @@ BloodySimpleS3.prototype.copy = function (source, destination, options, callback
       .nodeify(callback);
   }
 
-  if (!_.isString(destination)) {
-    return Promise.reject(new Error('Invalid destination param; expected string, received ' + typeof(destination)))
+  if (!_.isString(target)) {
+    return Promise.reject(new Error('Invalid target param; expected string, received ' + typeof(target)))
       .nodeify(callback);
   }
 
@@ -290,40 +273,34 @@ BloodySimpleS3.prototype.copy = function (source, destination, options, callback
 
   params = _.assign(options, {
     Bucket: this.bucket,
-    CopySource: encodeURIComponent(pathjs.join(this.bucket, source)),
-    Key: destination,
+    CopySource: encodeURIComponent(path.join(this.bucket, source)),
+    Key: target,
     MetadataDirective: 'COPY'
   });
 
   resolver = function(resolve, reject) {
     _this.s3.copyObject(params, function(err, data) {
       if (err) return reject(err);
-
-      resolve({
-        key: destination,
-        path: destination,
-        last_modified: data.LastModified
-      });
+      resolve({name: target, last_modified: data.LastModified});
     });
   };
 
   return new Promise(resolver).nodeify(callback);
 };
 
-
-BloodySimpleS3.prototype.remove = function (path, callback) {
+BloodySimpleS3.prototype.remove = function (filename, callback) {
   var _this = this;
   var params;
   var resolver;
 
-  if (!_.isString(path)) {
-    return Promise.reject(new Error('Invalid path param; expected string, received ' + typeof(path)))
+  if (!_.isString(filename)) {
+    return Promise.reject(new Error('Invalid filename param; expected string, received ' + typeof(filename)))
       .nodeify(callback);
   }
 
   params = {
     Bucket: this.bucket,
-    Key: path
+    Key: filename
   };
 
   resolver = function(resolve, reject) {
@@ -336,14 +313,13 @@ BloodySimpleS3.prototype.remove = function (path, callback) {
   return new Promise(resolver).nodeify(callback);
 };
 
-
-BloodySimpleS3.prototype.move = function (source, destination, options, callback) {
+BloodySimpleS3.prototype.move = function (source, target, options, callback) {
   if (_.isFunction(options)) {
     callback = options;
     options = {};
   }
 
-  return this.copy(source, destination, options)
+  return this.copy(source, target, options)
     .bind(this)
     .then(function (data) {
       return this.remove(source).return(data);
