@@ -22,7 +22,7 @@ var s3 = new S3({
   sslEnabled: true
 });
 
-s3.upload('/Users/john/Photos/monkey.jpg', 'images/monkey-1.jpg)
+s3.upload('/Users/john/Photos/monkey.jpg', 'images/monkey-1.jpg')
   .then(function (file) {
     console.log(file.path);
   })
