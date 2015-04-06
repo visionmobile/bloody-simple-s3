@@ -6,6 +6,7 @@
 * [Methods](#methods)
   * [createReadStream(filename)](#createReadStream)
   * [writeFile(filename, contents, [callback])](#writeFile)
+  * [readBuffer(filename, [callback])](#readBuffer)
   * [list(dir, options, [callback])](#list)
   * [copy(source, destination, [callback])](#copy)
   * [move(source, destination, [callback])](#move)
@@ -94,6 +95,31 @@ var readable = fs.createReadStream('/local/dir/test.png');
 s3.writeFile('images/test.png', readable)
   .then(function (file) {
     // do something on success
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
+```
+
+### <a name="readBuffer" href="#readBuffer">#</a>readBuffer(filename, [callback]) -> Promise
+
+Reads the designated file from S3 and returns a buffer.
+
+##### Parameters
+
+* `filename` _(String)_ file path on S3
+* `callback` _(Function)_ optional callback function with (err, buf) arguments
+
+##### Returns
+
+A promise resolving to a buffer.
+
+##### Example
+
+```javascript
+s3.readBuffer('images/test.png')
+  .then(function (buf) {
+    // do something with buf
   })
   .catch(function (err) {
     console.error(err);
