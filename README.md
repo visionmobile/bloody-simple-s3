@@ -41,7 +41,7 @@ $ npm install bloody-simple-s3
 
 #### Requirements
 
-* Node.js 0.8+*
+* Node.js 0.8+
 
 ## Contribute
 
