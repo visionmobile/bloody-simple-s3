@@ -1,3 +1,7 @@
+## 0.3.1 - 2015-04-06
+
+* Add #readBuffer method to read the contents of a file from S3
+
 ## 0.3.0 - 2015-04-03
 
 * Add #rename as alias of #move
