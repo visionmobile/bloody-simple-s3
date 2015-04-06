@@ -115,6 +115,29 @@ BloodySimpleS3.prototype.download = function (source, target, callback) {
     .nodeify(callback);
 };
 
+BloodySimpleS3.prototype.readBuffer = function (filename, callback) {
+  var _this = this;
+  var resolver;
+
+  resolver = function(resolve, reject) {
+    var readable = _this.createReadStream(filename);
+    var buf = [];
+
+    readable.on('data', function(d) {
+      buf.push(d);
+    });
+
+    readable.on('end', function() {
+      resolve(Buffer.concat(buf));
+    });
+
+    readable.on('error', reject);
+  };
+
+  return new Promise(resolver)
+    .nodeify(callback);
+};
+
 BloodySimpleS3.prototype.writeFile = function (filename, contents, callback) {
   var _this = this;
   var params;
