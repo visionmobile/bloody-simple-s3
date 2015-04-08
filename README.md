@@ -31,7 +31,7 @@ s3.upload('/Users/john/Photos/monkey.jpg', 'images/monkey-1.jpg')
   });
 ```
 
-For further information on how to use this library please refer to the [API docs](https://github.com/jmike/bloody-simple-s3/blob/master/docs/API.md).
+For further information on how to use this library please refer to the [API docs](https://github.com/visionmobile/bloody-simple-s3/blob/master/docs/API.md).
 
 ## Installation
 
@@ -48,14 +48,14 @@ $ npm install bloody-simple-s3
 Source code contributions are most welcome. The following rules apply:
 
 1. JavaScript source code needs to follow the [Airbnb Style Guide](https://github.com/airbnb/javascript);
-2. Functions need to be well documented in [API docs](https://github.com/jmike/bloody-simple-s3/blob/master/docs/API.md);
+2. Functions need to be well documented in [API docs](https://github.com/visionmobile/bloody-simple-s3/blob/master/docs/API.md);
 3. Unit tests are necessary.
 
 ## Support
 
 If you are having issues with this library, please let us know.
 
-* Issue Tracker: [github.com/jmike/bloody-simple-s3/issues](https://github.com/jmike/bloody-simple-s3/issues)
+* Issue Tracker: [github.com/jmike/bloody-simple-s3/issues](https://github.com/visionmobile/bloody-simple-s3/issues)
 
 ## License
 
