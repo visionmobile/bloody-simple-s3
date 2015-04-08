@@ -55,7 +55,7 @@ Source code contributions are most welcome. The following rules apply:
 
 If you are having issues with this library, please let us know.
 
-* Issue Tracker: [github.com/jmike/bloody-simple-s3/issues](https://github.com/visionmobile/bloody-simple-s3/issues)
+* Issue Tracker: [github.com/visionmobile/bloody-simple-s3/issues](https://github.com/visionmobile/bloody-simple-s3/issues)
 
 ## License
 
