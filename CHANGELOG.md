@@ -1,3 +1,7 @@
+## 0.3.3 - 2015-04-16
+
+* Set cursor=dir by default as a smarter way to filter our dir references from the #list() results
+
 ## 0.3.2 - 2015-04-16
 
 * Remove self reference to the dir on #list(dir)
