@@ -1,3 +1,7 @@
+## 0.3.2 - 2015-04-16
+
+* Remove self reference to the dir on #list(dir)
+
 ## 0.3.1 - 2015-04-06
 
 * Add #readBuffer method to read the contents of a file from S3
