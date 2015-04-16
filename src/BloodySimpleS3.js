@@ -242,7 +242,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
   params = {
     Bucket: this.bucket,
     Prefix: path.normalize(dir),
-    Marker: options.cursor,
+    Marker: options.cursor || path.normalize(dir),
     MaxKeys: options.limit
   };
 
@@ -252,18 +252,13 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
 
       if (err) return reject(err);
 
-      arr = _.chain(data.Contents)
-        .map(function (obj) {
-          return {
-            name: obj.Key,
-            size: obj.Size,
-            last_modified: obj.LastModified
-          };
-        })
-        .filter(function (obj) {
-          return obj.name !== dir; // remove self reference to dir
-        })
-        .value();
+      arr = _.map(data.Contents, function (obj) {
+        return {
+          name: obj.Key,
+          size: obj.Size,
+          last_modified: obj.LastModified
+        };
+      });
 
       resolve(arr);
     });
