@@ -252,13 +252,18 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
 
       if (err) return reject(err);
 
-      arr = data.Contents.map(function (obj) {
-        return {
-          name: obj.Key,
-          size: obj.Size,
-          last_modified: obj.LastModified
-        };
-      });
+      arr = _.chain(data.Contents)
+        .map(function (obj) {
+          return {
+            name: obj.Key,
+            size: obj.Size,
+            last_modified: obj.LastModified
+          };
+        })
+        .filter(function (obj) {
+          return obj.name !== dir; // remove self reference to dir
+        })
+        .value();
 
       resolve(arr);
     });
