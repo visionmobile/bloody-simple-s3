@@ -34,6 +34,10 @@ describe('Bloody Simple S3', function () {
           assert.isArray(files);
           assert.operator(files.length, '>', 0);
 
+          files.forEach(function (file) {
+            assert.notStrictEqual(file.name, 'images/');
+          });
+
           // update length
           len = files.length;
         })
