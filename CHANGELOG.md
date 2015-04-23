@@ -1,3 +1,7 @@
+## 0.3.4 - 2015-04-23
+
+* Update aws-sdk to v.2.1.24
+
 ## 0.3.3 - 2015-04-16
 
 * Set cursor=dir by default as a smarter way to filter our dir references from the #list() results
