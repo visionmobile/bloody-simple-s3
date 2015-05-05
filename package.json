@@ -23,12 +23,12 @@
   "author": "Dimitrios C. Michalakos <dimitris@jmike.gr>",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.1.24",
-    "bluebird": "^2.9.24",
-    "lodash": "^3.7.0"
+    "aws-sdk": "^2.1.26",
+    "bluebird": "^2.9.25",
+    "lodash": "^3.8.0"
   },
   "devDependencies": {
-    "chai": "^2.2.0",
+    "chai": "^2.3.0",
     "dotenv": "^1.1.0",
     "mocha": "^2.2.4"
   }
