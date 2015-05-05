@@ -1,3 +1,8 @@
+## 0.3.5 - 2015-05-05
+
+* Update npm dependencies (aws-sdk@2.1.26, bluebird@2.9.25, lodash@3.8.0, chai@2.3.0)
+* Adopt semantic versioning
+
 ## 0.3.4 - 2015-04-23
 
 * Update aws-sdk to v.2.1.24
