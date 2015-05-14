@@ -1,10 +1,14 @@
 var path = require('path');
-var fs = require('fs');
+var crypto = require('crypto');
+var Promise = require('bluebird');
+var fs = Promise.promisifyAll(require('fs'));
 var os = require('os');
 var stream = require('stream');
 var AWS = require('aws-sdk');
 var Promise = require('bluebird');
 var _ = require('lodash');
+
+var hash = crypto.createHash('md5');
 
 function BloodySimpleS3(options) {
   if (!_.isPlainObject(options)) {
@@ -62,7 +66,7 @@ BloodySimpleS3.prototype.createReadStream = function (filename) {
   return this.s3.getObject(params).createReadStream();
 };
 
-BloodySimpleS3.prototype.download = function (source, target, callback) {
+BloodySimpleS3.prototype.downloadΙnsecure = function (source, target, callback) {
   var _this = this;
   var resolver;
 
@@ -111,7 +115,27 @@ BloodySimpleS3.prototype.download = function (source, target, callback) {
     });
   };
 
-  return new Promise(resolver)
+  return new Promise(resolver).nodeify(callback);
+};
+
+BloodySimpleS3.prototype.download = function (source, target, callback) {
+  return Promise.props({
+    file: this.downloadΙnsecure(source, target),
+    meta: this.getFileMeta(source)
+  })
+    .then(function (props) {
+      return fs.readFileAsync(props.file.name)
+        .then(function (buf) {
+          if (props.meta.ETag !== '"' + hash.update(buf).digest().toString('hex') + '"') {
+            throw new Error(
+              'Bad MD5 digest for file ' + props.file.name + '; ' +
+              'expected ' + props.meta.ETag + ', received "' + hash.update(buf).digest().toString('hex') + '"'
+            );
+          }
+
+          return props.file;
+        });
+    })
     .nodeify(callback);
 };
 
