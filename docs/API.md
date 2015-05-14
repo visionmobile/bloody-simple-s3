@@ -14,6 +14,7 @@
   * [remove(path, [callback])](#remove)
   * [download(source, [destination], [callback])](#download)
   * [upload(source, [destination], [callback])](#upload)
+  * [getFileMeta(filename, [callback])](#getFileMeta)
 
 ## Constructor
 
@@ -293,6 +294,31 @@ A promise resolving to the attributes of the uploaded file, i.e. an object with 
 ```javascript
 s3.upload('/Users/jmike/image.png', 'images/jmike.png')
   .then(function (file) {
+    // do something on success
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
+```
+
+### <a name="getFileMeta" href="#getFileMeta">#</a>getFileMeta(filename, [callback]) -> Promise
+
+Retrieves the designated file's metadata from S3, without downloading the file itself.
+
+##### Parameters
+
+* `filename` _(String)_ relative file path on S3
+* `callback` _(Function)_ optional callback function with (err, data) arguments
+
+##### Returns
+
+A promise resolving an object of metadata.
+
+##### Example
+
+```javascript
+s3.getFileMeta('images/jmike.png')
+  .then(function (data) {
     // do something on success
   })
   .catch(function (err) {

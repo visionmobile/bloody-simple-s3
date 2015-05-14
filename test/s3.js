@@ -28,6 +28,15 @@ describe('Bloody Simple S3', function () {
         .catch(done);
     });
 
+    it('reads metadata from S3', function (done) {
+      s3.getFileMeta('images/soon.jpg')
+        .then(function (data) {
+          assert.isObject(data);
+        })
+        .then(done)
+        .catch(done);
+    });
+
     it('lists files in S3', function (done) {
       s3.list('images/')
         .then(function (files) {
