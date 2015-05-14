@@ -352,4 +352,28 @@ BloodySimpleS3.prototype.move = function (source, target, options, callback) {
 
 BloodySimpleS3.prototype.rename = BloodySimpleS3.prototype.move;
 
+BloodySimpleS3.prototype.getFileMeta = function (filename, callback) {
+  var _this = this;
+  var params;
+  var resolver;
+
+  if (!_.isString(filename)) {
+    throw new Error('Invalid filename param; expected string, received ' + typeof(filename));
+  }
+
+  params = {
+    Key: filename,
+    Bucket: this.bucket
+  };
+
+  resolver = function(resolve, reject) {
+    _this.s3.headObject(params, function (err, data) {
+      if (err) return reject(err);
+      resolve(data);
+    });
+  };
+
+  return new Promise(resolver).nodeify(callback);
+};
+
 module.exports = BloodySimpleS3;
