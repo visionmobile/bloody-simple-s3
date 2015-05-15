@@ -66,7 +66,7 @@ BloodySimpleS3.prototype.createReadStream = function (filename) {
   return this.s3.getObject(params).createReadStream();
 };
 
-BloodySimpleS3.prototype.downloadΙnsecure = function (source, target, callback) {
+BloodySimpleS3.prototype.downloadWithoutCheck = function (source, target, callback) {
   var _this = this;
   var resolver;
 
@@ -120,17 +120,20 @@ BloodySimpleS3.prototype.downloadΙnsecure = function (source, target, callback)
 
 BloodySimpleS3.prototype.download = function (source, target, callback) {
   return Promise.props({
-    file: this.downloadΙnsecure(source, target),
+    file: this.downloadWithoutCheck(source, target),
     meta: this.getFileMeta(source)
   })
     .then(function (props) {
       return fs.readFileAsync(props.file.name)
         .then(function (buf) {
+          var err;
+
           if (props.meta.ETag !== '"' + hash.update(buf).digest().toString('hex') + '"') {
-            throw new Error(
-              'Bad MD5 digest for file ' + props.file.name + '; ' +
-              'expected ' + props.meta.ETag + ', received "' + hash.update(buf).digest().toString('hex') + '"'
-            );
+            err = new Error('Bad MD5 digest for file ' + source);
+            err.code = 'BAD_DIGEST';
+
+            return fs.unlinkAsync(props.file.name) // remove downloaded file from disk
+              .throw(err);
           }
 
           return props.file;
