@@ -7,6 +7,7 @@ A bloody simple S3 client, based on the official AWS SDK.
 #### Features
 
 * Promise and callback interface;
+* Automatic file integrity check;
 * Bloody simple API.
 
 ## Quick start
