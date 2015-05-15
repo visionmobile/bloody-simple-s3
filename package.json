@@ -25,7 +25,8 @@
   "dependencies": {
     "aws-sdk": "^2.1.26",
     "bluebird": "^2.9.25",
-    "lodash": "^3.8.0"
+    "lodash": "^3.8.0",
+    "type-of": "^2.0.1"
   },
   "devDependencies": {
     "chai": "^2.3.0",
