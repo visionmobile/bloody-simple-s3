@@ -7,12 +7,13 @@ var stream = require('stream');
 var AWS = require('aws-sdk');
 var Promise = require('bluebird');
 var _ = require('lodash');
+var type = require('type-of');
 
 var hash = crypto.createHash('md5');
 
 function BloodySimpleS3(options) {
   if (!_.isPlainObject(options)) {
-    throw new Error('Invalid options param; expected object, received ' + typeof(options));
+    throw new Error('Invalid options param; expected object, received ' + type(options));
   }
 
   options = _.defaults(options, {
@@ -21,23 +22,23 @@ function BloodySimpleS3(options) {
   });
 
   if (!_.isString(options.bucket)) {
-    throw new Error('Invalid bucket option; expected string, received ' + typeof(options.bucket));
+    throw new Error('Invalid bucket option; expected string, received ' + type(options.bucket));
   }
 
   if (!_.isString(options.accessKeyId)) {
-    throw new Error('Invalid accessKeyId option; expected string, received ' + typeof(options.accessKeyId));
+    throw new Error('Invalid accessKeyId option; expected string, received ' + type(options.accessKeyId));
   }
 
   if (!_.isString(options.secretAccessKey)) {
-    throw new Error('Invalid secretAccessKey option; expected string, received ' + typeof(options.secretAccessKey));
+    throw new Error('Invalid secretAccessKey option; expected string, received ' + type(options.secretAccessKey));
   }
 
   if (!_.isString(options.region)) {
-    throw new Error('Invalid region option; expected string, received ' + typeof(options.region));
+    throw new Error('Invalid region option; expected string, received ' + type(options.region));
   }
 
   if (!_.isBoolean(options.sslEnabled)) {
-    throw new Error('Invalid sslEnabled option; expected boolean, received ' + typeof(options.sslEnabled));
+    throw new Error('Invalid sslEnabled option; expected boolean, received ' + type(options.sslEnabled));
   }
 
   this.bucket = options.bucket;
@@ -55,7 +56,7 @@ BloodySimpleS3.prototype.createReadStream = function (filename) {
   var params;
 
   if (!_.isString(filename)) {
-    throw new Error('Invalid filename param; expected string, received ' + typeof(filename));
+    throw new Error('Invalid filename param; expected string, received ' + type(filename));
   }
 
   params = {
@@ -71,7 +72,7 @@ BloodySimpleS3.prototype.downloadWithoutCheck = function (source, target, callba
   var resolver;
 
   if (!_.isString(source)) {
-    return Promise.reject(new Error('Invalid source param; expected string, received ' + typeof(source)))
+    return Promise.reject(new Error('Invalid source param; expected string, received ' + type(source)))
       .nodeify(callback);
   }
 
@@ -83,7 +84,7 @@ BloodySimpleS3.prototype.downloadWithoutCheck = function (source, target, callba
   }
 
   if (!_.isString(target)) {
-    return Promise.reject(new Error('Invalid target param; expected string, received ' + typeof(target)))
+    return Promise.reject(new Error('Invalid target param; expected string, received ' + type(target)))
       .nodeify(callback);
   }
 
@@ -171,7 +172,7 @@ BloodySimpleS3.prototype.writeFile = function (filename, contents, callback) {
   var resolver;
 
   if (!_.isString(filename)) {
-    return Promise.reject(new Error('Invalid filename param; expected string, received ' + typeof(filename)))
+    return Promise.reject(new Error('Invalid filename param; expected string, received ' + type(filename)))
       .nodeify(callback);
   }
 
@@ -180,7 +181,7 @@ BloodySimpleS3.prototype.writeFile = function (filename, contents, callback) {
     !(Buffer.isBuffer(contents)) &&
     !_.isString(contents)
   ) {
-    return Promise.reject(new Error('Invalid contents param; expected readable stream, buffer or string, received ' + typeof(contents)))
+    return Promise.reject(new Error('Invalid contents param; expected readable stream, buffer or string, received ' + type(contents)))
       .nodeify(callback);
   }
 
@@ -206,7 +207,7 @@ BloodySimpleS3.prototype.upload = function (source, target, callback) {
   var resolver;
 
   if (!_.isString(source)) {
-    return Promise.reject(new Error('Invalid source param; expected string, received ' + typeof(source)))
+    return Promise.reject(new Error('Invalid source param; expected string, received ' + type(source)))
       .nodeify(callback);
   }
 
@@ -220,7 +221,7 @@ BloodySimpleS3.prototype.upload = function (source, target, callback) {
   }
 
   if (!_.isString(target)) {
-    return Promise.reject(new Error('Invalid target param; expected string, received ' + typeof(target)))
+    return Promise.reject(new Error('Invalid target param; expected string, received ' + type(target)))
       .nodeify(callback);
   }
 
@@ -250,7 +251,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
   var resolver;
 
   if (!_.isString(dir)) {
-    return Promise.reject(new Error('Invalid dir param; expected string, received ' + typeof(dir)))
+    return Promise.reject(new Error('Invalid dir param; expected string, received ' + type(dir)))
       .nodeify(callback);
   }
 
@@ -262,7 +263,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
   }
 
   if (!_.isPlainObject(options)) {
-    return Promise.reject(new Error('Invalid options param; expected object, received ' + typeof(options)))
+    return Promise.reject(new Error('Invalid options param; expected object, received ' + type(options)))
       .nodeify(callback);
   }
 
@@ -300,12 +301,12 @@ BloodySimpleS3.prototype.copy = function (source, target, options, callback) {
   var resolver;
 
   if (!_.isString(source)) {
-    return Promise.reject(new Error('Invalid source param; expected string, received ' + typeof(source)))
+    return Promise.reject(new Error('Invalid source param; expected string, received ' + type(source)))
       .nodeify(callback);
   }
 
   if (!_.isString(target)) {
-    return Promise.reject(new Error('Invalid target param; expected string, received ' + typeof(target)))
+    return Promise.reject(new Error('Invalid target param; expected string, received ' + type(target)))
       .nodeify(callback);
   }
 
@@ -317,7 +318,7 @@ BloodySimpleS3.prototype.copy = function (source, target, options, callback) {
   }
 
   if (!_.isPlainObject(options)) {
-    return Promise.reject(new Error('Invalid options param; expected object, received ' + typeof(options)))
+    return Promise.reject(new Error('Invalid options param; expected object, received ' + type(options)))
       .nodeify(callback);
   }
 
@@ -344,7 +345,7 @@ BloodySimpleS3.prototype.remove = function (filename, callback) {
   var resolver;
 
   if (!_.isString(filename)) {
-    return Promise.reject(new Error('Invalid filename param; expected string, received ' + typeof(filename)))
+    return Promise.reject(new Error('Invalid filename param; expected string, received ' + type(filename)))
       .nodeify(callback);
   }
 
@@ -385,7 +386,7 @@ BloodySimpleS3.prototype.getFileMeta = function (filename, callback) {
   var resolver;
 
   if (!_.isString(filename)) {
-    throw new Error('Invalid filename param; expected string, received ' + typeof(filename));
+    throw new Error('Invalid filename param; expected string, received ' + type(filename));
   }
 
   params = {
