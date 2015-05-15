@@ -31,6 +31,6 @@
   "devDependencies": {
     "chai": "^2.3.0",
     "dotenv": "^1.1.0",
-    "mocha": "^2.2.4"
+    "mocha": "^2.2.5"
   }
 }
