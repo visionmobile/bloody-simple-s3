@@ -1,3 +1,9 @@
+## 0.4.0 - 2015-05-15
+
+* Calculate md5 checksum on #upload() and #download() to make sure the file's integrity is intact
+* Install type-of@2.0.1 for better (i.e. more descriptive) error messages
+* Update npm dependencies (aws-sdk@2.1.28, mocha@2.2.5)
+
 ## 0.3.5 - 2015-05-05
 
 * Update npm dependencies (aws-sdk@2.1.26, bluebird@2.9.25, lodash@3.8.0, chai@2.3.0)
