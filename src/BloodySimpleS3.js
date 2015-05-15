@@ -1,4 +1,5 @@
 var path = require('path');
+var os = require('os');
 var crypto = require('crypto');
 var Promise = require('bluebird');
 var fs = Promise.promisifyAll(require('fs'));
@@ -8,8 +9,6 @@ var AWS = require('aws-sdk');
 var Promise = require('bluebird');
 var _ = require('lodash');
 var type = require('type-of');
-
-var hash = crypto.createHash('md5');
 
 function BloodySimpleS3(options) {
   if (!_.isPlainObject(options)) {
@@ -129,7 +128,7 @@ BloodySimpleS3.prototype.download = function (source, target, callback) {
         .then(function (buf) {
           var err;
 
-          if (props.meta.ETag !== '"' + hash.update(buf).digest().toString('hex') + '"') {
+          if (props.meta.ETag !== '"' + crypto.createHash('md5').update(buf).digest().toString('hex') + '"') {
             err = new Error('Bad MD5 digest for file ' + source);
             err.code = 'BAD_DIGEST';
 
@@ -176,11 +175,7 @@ BloodySimpleS3.prototype.writeFile = function (filename, contents, callback) {
       .nodeify(callback);
   }
 
-  if (
-    !(contents instanceof stream.Readable) &&
-    !(Buffer.isBuffer(contents)) &&
-    !_.isString(contents)
-  ) {
+  if (!(contents instanceof stream.Readable) && !(Buffer.isBuffer(contents)) && !_.isString(contents)) {
     return Promise.reject(new Error('Invalid contents param; expected readable stream, buffer or string, received ' + type(contents)))
       .nodeify(callback);
   }
@@ -190,6 +185,10 @@ BloodySimpleS3.prototype.writeFile = function (filename, contents, callback) {
     Body: contents,
     Bucket: _this.bucket
   };
+
+  if (Buffer.isBuffer(contents)) {
+    params.ContentMD5 = crypto.createHash('md5').update(contents).digest().toString('base64'); // force integrity check
+  }
 
   resolver = function(resolve, reject) {
     _this.s3.putObject(params, function (err) {
@@ -204,7 +203,6 @@ BloodySimpleS3.prototype.writeFile = function (filename, contents, callback) {
 
 BloodySimpleS3.prototype.upload = function (source, target, callback) {
   var _this = this;
-  var resolver;
 
   if (!_.isString(source)) {
     return Promise.reject(new Error('Invalid source param; expected string, received ' + type(source)))
@@ -225,23 +223,25 @@ BloodySimpleS3.prototype.upload = function (source, target, callback) {
       .nodeify(callback);
   }
 
-  resolver = function(resolve, reject) {
-    fs.stat(source, function (err, stats) {
-      var readable;
-
-      if (err) return reject(err);
+  return fs.statAsync(source)
+    .then(function (stats) {
+      var err;
 
       if (!stats.isFile()) {
-        return reject(new Error('Source is invalid; you must reference a file'));
+        err = new Error('Source is invalid; you must reference a file');
+        err.code = 'INVALID_SOURCE';
+        throw err;
       }
 
-      readable = fs.createReadStream(source);
+      if (stats.size < os.freemem()) {
+        return fs.readFileAsync(source); // memory is suffient - use buffer
+      }
 
-      resolve(_this.writeFile(target, readable));
-    });
-  };
-
-  return new Promise(resolver)
+      return fs.createReadStream(source);
+    })
+    .then(function (contents) {
+      return _this.writeFile(target, contents);
+    })
     .nodeify(callback);
 };
 
