@@ -1,3 +1,7 @@
+## 0.5.0 - 2015-05-25
+
+* Introduce custom errors with distinct names for better visibility
+
 ## 0.4.0 - 2015-05-15
 
 * Calculate md5 checksum on #upload() and #download() to make sure the file's integrity is intact
