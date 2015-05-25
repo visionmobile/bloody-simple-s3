@@ -10,9 +10,11 @@ var Promise = require('bluebird');
 var _ = require('lodash');
 var type = require('type-of');
 
+var CustomError = require('./CustomError');
+
 function BloodySimpleS3(options) {
   if (!_.isPlainObject(options)) {
-    throw new Error('Invalid options param; expected object, received ' + type(options));
+    throw new CustomError('Invalid options param; expected object, received ' + type(options), 'InvalidArgument');
   }
 
   options = _.defaults(options, {
@@ -21,23 +23,23 @@ function BloodySimpleS3(options) {
   });
 
   if (!_.isString(options.bucket)) {
-    throw new Error('Invalid bucket option; expected string, received ' + type(options.bucket));
+    throw new CustomError('Invalid bucket option; expected string, received ' + type(options.bucket), 'InvalidArgument');
   }
 
   if (!_.isString(options.accessKeyId)) {
-    throw new Error('Invalid accessKeyId option; expected string, received ' + type(options.accessKeyId));
+    throw new CustomError('Invalid accessKeyId option; expected string, received ' + type(options.accessKeyId), 'InvalidArgument');
   }
 
   if (!_.isString(options.secretAccessKey)) {
-    throw new Error('Invalid secretAccessKey option; expected string, received ' + type(options.secretAccessKey));
+    throw new CustomError('Invalid secretAccessKey option; expected string, received ' + type(options.secretAccessKey), 'InvalidArgument');
   }
 
   if (!_.isString(options.region)) {
-    throw new Error('Invalid region option; expected string, received ' + type(options.region));
+    throw new CustomError('Invalid region option; expected string, received ' + type(options.region), 'InvalidArgument');
   }
 
   if (!_.isBoolean(options.sslEnabled)) {
-    throw new Error('Invalid sslEnabled option; expected boolean, received ' + type(options.sslEnabled));
+    throw new CustomError('Invalid sslEnabled option; expected boolean, received ' + type(options.sslEnabled), 'InvalidArgument');
   }
 
   this.bucket = options.bucket;
@@ -55,7 +57,7 @@ BloodySimpleS3.prototype.createReadStream = function (filename) {
   var params;
 
   if (!_.isString(filename)) {
-    throw new Error('Invalid filename param; expected string, received ' + type(filename));
+    throw new CustomError('Invalid filename param; expected string, received ' + type(filename), 'InvalidArgument');
   }
 
   params = {
@@ -71,7 +73,7 @@ BloodySimpleS3.prototype.downloadWithoutCheck = function (source, target, callba
   var resolver;
 
   if (!_.isString(source)) {
-    return Promise.reject(new Error('Invalid source param; expected string, received ' + type(source)))
+    return Promise.reject(new CustomError('Invalid source param; expected string, received ' + type(source)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -83,7 +85,7 @@ BloodySimpleS3.prototype.downloadWithoutCheck = function (source, target, callba
   }
 
   if (!_.isString(target)) {
-    return Promise.reject(new Error('Invalid target param; expected string, received ' + type(target)))
+    return Promise.reject(new CustomError('Invalid target param; expected string, received ' + type(target)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -100,7 +102,7 @@ BloodySimpleS3.prototype.downloadWithoutCheck = function (source, target, callba
         file = target;
 
       } else {
-        return reject(new Error('Invalid target path; expected directory or file'));
+        return reject(new CustomError('Invalid target path; expected directory or file', 'InvalidDownloadTarget'));
       }
 
       readable = _this.createReadStream(source);
@@ -126,14 +128,9 @@ BloodySimpleS3.prototype.download = function (source, target, callback) {
     .then(function (props) {
       return fs.readFileAsync(props.file.name)
         .then(function (buf) {
-          var err;
-
           if (props.meta.ETag !== '"' + crypto.createHash('md5').update(buf).digest().toString('hex') + '"') {
-            err = new Error('Bad MD5 digest for file ' + source);
-            err.code = 'BAD_DIGEST';
-
             return fs.unlinkAsync(props.file.name) // remove downloaded file from disk
-              .throw(err);
+              .throw(new CustomError('Invalid checksum of file ' + source, 'BadMD5Digest'));
           }
 
           return props.file;
@@ -171,12 +168,12 @@ BloodySimpleS3.prototype.writeFile = function (filename, contents, callback) {
   var resolver;
 
   if (!_.isString(filename)) {
-    return Promise.reject(new Error('Invalid filename param; expected string, received ' + type(filename)))
+    return Promise.reject(new CustomError('Invalid filename param; expected string, received ' + type(filename)), 'InvalidArgument')
       .nodeify(callback);
   }
 
   if (!(contents instanceof stream.Readable) && !(Buffer.isBuffer(contents)) && !_.isString(contents)) {
-    return Promise.reject(new Error('Invalid contents param; expected readable stream, buffer or string, received ' + type(contents)))
+    return Promise.reject(new CustomError('Invalid contents param; expected readable stream, buffer or string, received ' + type(contents)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -205,7 +202,7 @@ BloodySimpleS3.prototype.upload = function (source, target, callback) {
   var _this = this;
 
   if (!_.isString(source)) {
-    return Promise.reject(new Error('Invalid source param; expected string, received ' + type(source)))
+    return Promise.reject(new CustomError('Invalid source param; expected string, received ' + type(source)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -219,18 +216,14 @@ BloodySimpleS3.prototype.upload = function (source, target, callback) {
   }
 
   if (!_.isString(target)) {
-    return Promise.reject(new Error('Invalid target param; expected string, received ' + type(target)))
+    return Promise.reject(new CustomError('Invalid target param; expected string, received ' + type(target)), 'InvalidArgument')
       .nodeify(callback);
   }
 
   return fs.statAsync(source)
     .then(function (stats) {
-      var err;
-
       if (!stats.isFile()) {
-        err = new Error('Source is invalid; you must reference a file');
-        err.code = 'INVALID_SOURCE';
-        throw err;
+        throw new CustomError('Source is invalid; you must reference a file', 'InvalidUploadSource');
       }
 
       if (stats.size < os.freemem()) {
@@ -251,7 +244,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
   var resolver;
 
   if (!_.isString(dir)) {
-    return Promise.reject(new Error('Invalid dir param; expected string, received ' + type(dir)))
+    return Promise.reject(new CustomError('Invalid dir param; expected string, received ' + type(dir)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -263,7 +256,7 @@ BloodySimpleS3.prototype.list = function (dir, options, callback) {
   }
 
   if (!_.isPlainObject(options)) {
-    return Promise.reject(new Error('Invalid options param; expected object, received ' + type(options)))
+    return Promise.reject(new CustomError('Invalid options param; expected object, received ' + type(options)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -301,12 +294,12 @@ BloodySimpleS3.prototype.copy = function (source, target, options, callback) {
   var resolver;
 
   if (!_.isString(source)) {
-    return Promise.reject(new Error('Invalid source param; expected string, received ' + type(source)))
+    return Promise.reject(new CustomError('Invalid source param; expected string, received ' + type(source)), 'InvalidArgument')
       .nodeify(callback);
   }
 
   if (!_.isString(target)) {
-    return Promise.reject(new Error('Invalid target param; expected string, received ' + type(target)))
+    return Promise.reject(new CustomError('Invalid target param; expected string, received ' + type(target)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -318,7 +311,7 @@ BloodySimpleS3.prototype.copy = function (source, target, options, callback) {
   }
 
   if (!_.isPlainObject(options)) {
-    return Promise.reject(new Error('Invalid options param; expected object, received ' + type(options)))
+    return Promise.reject(new CustomError('Invalid options param; expected object, received ' + type(options)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -345,7 +338,7 @@ BloodySimpleS3.prototype.remove = function (filename, callback) {
   var resolver;
 
   if (!_.isString(filename)) {
-    return Promise.reject(new Error('Invalid filename param; expected string, received ' + type(filename)))
+    return Promise.reject(new CustomError('Invalid filename param; expected string, received ' + type(filename)), 'InvalidArgument')
       .nodeify(callback);
   }
 
@@ -386,7 +379,7 @@ BloodySimpleS3.prototype.getFileMeta = function (filename, callback) {
   var resolver;
 
   if (!_.isString(filename)) {
-    throw new Error('Invalid filename param; expected string, received ' + type(filename));
+    throw new CustomError('Invalid filename param; expected string, received ' + type(filename), 'InvalidArgument');
   }
 
   params = {
