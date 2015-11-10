@@ -1,8 +1,6 @@
-require('dotenv').load(); // load environmental variables
-
-var assert = require('chai').assert;
-var fs = require('fs');
-var S3 = require('../');
+import fs from 'fs';
+import {assert} from 'chai';
+import S3 from '../src/BloodySimpleS3';
 
 describe('Bloody Simple S3', function () {
 
