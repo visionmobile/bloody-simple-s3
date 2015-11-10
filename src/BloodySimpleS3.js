@@ -344,6 +344,10 @@ class BloodySimpleS3 {
       .nodeify(callback);
   }
 
+  rename() {
+    return this.move.apply(this, arguments);
+  }
+
   getFileMeta(filename, callback) {
     if (!_.isString(filename)) {
       return Promise.reject(new CustomError(`Invalid filename param; expected string, received ${type(filename)}`, 'InvalidArgument'))
@@ -367,6 +371,5 @@ class BloodySimpleS3 {
 
 }
 
-// BloodySimpleS3.prototype.rename = BloodySimpleS3.prototype.move;
 
 export default BloodySimpleS3;
