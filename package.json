@@ -6,8 +6,10 @@
     "type": "git",
     "url": "git://github.com/visionmobile/bloody-simple-s3.git"
   },
-  "main": "src/BloodySimpleS3.js",
+  "main": "dist/BloodySimpleS3.js",
   "scripts": {
+    "build": "gulp clean && gulp build",
+    "prepublish": "npm run build",
     "test": "node test/index.js"
   },
   "keywords": [

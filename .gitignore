@@ -1,5 +1,5 @@
 .DS_Store
 ._*
-
-node_modules/
 .env
+node_modules/
+dist/
