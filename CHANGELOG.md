@@ -1,3 +1,9 @@
+## 0.6.0 - 2015-11-10
+
+* Rewrite in es2015 using babel + gulp
+* Replace jshint with eslint, which provides better support for es2015
+* Update npm dependencies: aws-sdk@2.2.15, lodash@3.10.1, bluebird@3.0.5, dotenv@1.2.0, mocha@2.3.3, chai@3.4.1
+
 ## 0.5.0 - 2015-05-25
 
 * Introduce custom errors with distinct names for better visibility
