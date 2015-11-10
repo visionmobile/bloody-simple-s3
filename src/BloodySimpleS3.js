@@ -344,8 +344,8 @@ class BloodySimpleS3 {
       .nodeify(callback);
   }
 
-  rename() {
-    return this.move.apply(this, arguments);
+  rename(...args) {
+    return this.move.apply(this, args);
   }
 
   getFileMeta(filename, callback) {
