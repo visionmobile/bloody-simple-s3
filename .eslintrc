@@ -1,0 +1,15 @@
+{
+  "extends": "airbnb/base",
+  "ecmaFeatures": {
+  	"templateStrings": true
+  },
+  "rules": {
+    "comma-dangle": 0,
+    "no-eq-null": 0,
+    "no-console": 0,
+    "no-param-reassign": 0,
+    "space-before-function-paren": 0,
+    "func-names": 0,
+    "id-length": 0
+  }
+}
