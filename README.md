@@ -2,7 +2,7 @@
 
 A bloody simple S3 client, based on the official AWS SDK.
 
-[ ![Build Status for visionmobile/bloody-simple-sqs](https://codeship.com/projects/ce3c9d80-bb71-0132-8afa-3ee0b98d9f7e/status?branch=master)](https://codeship.com/projects/72166)
+[ ![Build Status for visionmobile/bloody-simple-s3](https://codeship.com/projects/e66d6350-aebb-0132-cc2e-72504bd694d9/status?branch=master)](https://codeship.com/projects/68954)
 
 #### Features
 
