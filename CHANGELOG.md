@@ -1,3 +1,8 @@
+## 0.6.1 - 2015-11-12
+
+* Use commonjs to import/export modules to avoid babel "default" decorator - see https://github.com/babel/babel/issues/2724 for further info
+* Replace gulpfile.js with gulpfile.babel.js
+
 ## 0.6.0 - 2015-11-10
 
 * Rewrite in es2015 using babel + gulp
