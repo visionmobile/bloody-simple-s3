@@ -1,6 +1,6 @@
-import fs from 'fs';
-import {assert} from 'chai';
-import S3 from '../src/BloodySimpleS3';
+const fs = require('fs');
+const assert = require('chai').assert;
+const S3 = require('../src/BloodySimpleS3');
 
 describe('Bloody Simple S3', function () {
 

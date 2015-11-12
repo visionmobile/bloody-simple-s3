@@ -1,5 +1,5 @@
-import path from 'path';
-import Mocha from 'mocha';
+const path = require('path');
+const Mocha = require('mocha');
 
 // init mocha
 const mocha = new Mocha({

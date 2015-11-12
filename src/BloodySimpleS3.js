@@ -1,13 +1,13 @@
-import os from 'os';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import stream from 'stream';
-import Promise from 'bluebird';
-import CustomError from 'customerror';
-import AWS from 'aws-sdk';
-import _ from 'lodash';
-import type from 'type-of';
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const stream = require('stream');
+const Promise = require('bluebird');
+const CustomError = require('customerror');
+const AWS = require('aws-sdk');
+const _ = require('lodash');
+const type = require('type-of');
 
 Promise.promisifyAll(fs);
 
@@ -371,5 +371,4 @@ class BloodySimpleS3 {
 
 }
 
-
-export default BloodySimpleS3;
+module.exports = BloodySimpleS3;
