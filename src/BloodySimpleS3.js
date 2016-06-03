@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const stream = require('stream');
+
 const Promise = require('bluebird');
 const CustomError = require('customerror');
 const AWS = require('aws-sdk');
@@ -293,7 +294,7 @@ class BloodySimpleS3 {
       Bucket: this.bucket,
       CopySource: encodeURIComponent(path.join(this.bucket, source)),
       Key: target,
-      MetadataDirective: 'COPY'
+      MetadataDirective: 'REPLACE'
     });
 
     const resolver = (resolve, reject) => {
