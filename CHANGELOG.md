@@ -1,3 +1,7 @@
+## 0.6.3 - 2016-06-03
+
+* Drop gulp in favor of npm scripts.
+
 ## 0.6.2 - 2016-06-03
 
 * Update npm dependencies to their latest version.
