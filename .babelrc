@@ -1,4 +1,7 @@
 {
   "presets": ["es2015"],
-  "plugins": ["transform-es2015-modules-commonjs"]
+  "plugins": [
+    "add-module-exports",
+    "transform-es2015-modules-commonjs"
+  ]
 }

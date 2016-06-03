@@ -1,3 +1,5 @@
-require('dotenv').load({silent: true});
+require('dotenv').load({ silent: true });
 require('babel-core/register');
-require('./loader');
+
+// load the test files
+require('./s3');

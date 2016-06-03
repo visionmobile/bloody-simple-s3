@@ -1,10 +1,11 @@
-const fs = require('fs');
-const assert = require('chai').assert;
-const S3 = require('../src/BloodySimpleS3');
+/* eslint-env node, mocha */
 
-describe('Bloody Simple S3', function () {
+import fs from 'fs';
+import { assert } from 'chai';
+import S3 from '../src/BloodySimpleS3';
 
-  var s3 = new S3({
+describe('Bloody Simple S3', () => {
+  const s3 = new S3({
     bucket: 'bloody-simple-s3',
     region: 'us-east-1',
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -12,13 +13,12 @@ describe('Bloody Simple S3', function () {
     sslEnabled: true
   });
 
-  describe('CRUD operation', function () {
+  describe('CRUD operation', () => {
+    let len = 0;
 
-    var len = 0;
-
-    it('uploads file to S3', function (done) {
+    it('uploads file to S3', (done) => {
       s3.upload('../assets/soon.jpg', 'images/soon.jpg')
-        .then(function (file) {
+        .then((file) => {
           assert.isObject(file);
           assert.property(file, 'name');
         })
@@ -26,22 +26,22 @@ describe('Bloody Simple S3', function () {
         .catch(done);
     });
 
-    it('reads metadata from S3', function (done) {
+    it('reads metadata from S3', (done) => {
       s3.getFileMeta('images/soon.jpg')
-        .then(function (data) {
+        .then((data) => {
           assert.isObject(data);
         })
         .then(done)
         .catch(done);
     });
 
-    it('lists files in S3', function (done) {
+    it('lists files in S3', (done) => {
       s3.list('images/')
-        .then(function (files) {
+        .then((files) => {
           assert.isArray(files);
           assert.operator(files.length, '>', 0);
 
-          files.forEach(function (file) {
+          files.forEach((file) => {
             assert.notStrictEqual(file.name, 'images/');
           });
 
@@ -52,9 +52,9 @@ describe('Bloody Simple S3', function () {
         .catch(done);
     });
 
-    it('copies files within S3', function (done) {
+    it('copies files within S3', (done) => {
       s3.copy('images/soon.jpg', 'images/sooner.jpg')
-        .then(function (file) {
+        .then((file) => {
           assert.isObject(file);
           assert.property(file, 'name');
           assert.strictEqual(file.name, 'images/sooner.jpg');
@@ -63,9 +63,9 @@ describe('Bloody Simple S3', function () {
         .catch(done);
     });
 
-    it('lists files in S3 to validate #copy', function (done) {
+    it('lists files in S3 to validate #copy', (done) => {
       s3.list('images/')
-        .then(function (files) {
+        .then((files) => {
           assert.strictEqual(files.length, len + 1);
 
           // update length
@@ -75,15 +75,15 @@ describe('Bloody Simple S3', function () {
         .catch(done);
     });
 
-    it('removes file from S3', function (done) {
+    it('removes file from S3', (done) => {
       s3.remove('images/sooner.jpg')
         .then(done)
         .catch(done);
     });
 
-    it('lists files in S3 to validate #remove', function (done) {
+    it('lists files in S3 to validate #remove', (done) => {
       s3.list('images/')
-        .then(function (files) {
+        .then((files) => {
           assert.strictEqual(files.length, len - 1);
 
           // update length
@@ -93,9 +93,9 @@ describe('Bloody Simple S3', function () {
         .catch(done);
     });
 
-    it('moves file in S3', function (done) {
+    it('moves file in S3', (done) => {
       s3.move('images/soon.jpg', 'images/soonest.jpg')
-        .then(function (file) {
+        .then((file) => {
           assert.isObject(file);
           assert.property(file, 'name');
         })
@@ -103,9 +103,9 @@ describe('Bloody Simple S3', function () {
         .catch(done);
     });
 
-    it('download file from S3', function (done) {
+    it('download file from S3', (done) => {
       s3.download('images/soonest.jpg')
-        .then(function (file) {
+        .then((file) => {
           assert.isObject(file);
           assert.property(file, 'name');
 
@@ -116,12 +116,10 @@ describe('Bloody Simple S3', function () {
         .catch(done);
     });
 
-    it('removes all files from S3', function (done) {
+    it('removes all files from S3', (done) => {
       s3.remove('images/soonest.jpg')
         .then(done)
         .catch(done);
     });
-
   });
-
 });
