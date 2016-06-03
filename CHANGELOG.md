@@ -1,3 +1,7 @@
+## 0.6.4 - 2016-06-03
+
+* Change #copy() internal MetadataDirective from 'COPY' to 'REPLACE'.
+
 ## 0.6.3 - 2016-06-03
 
 * Drop gulp in favor of npm scripts.
