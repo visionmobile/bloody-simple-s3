@@ -1,6 +1,6 @@
 {
   "name": "bloody-simple-s3",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "A bloody simple interface to S3, based on the official AWS sdk",
   "repository": {
     "type": "git",
